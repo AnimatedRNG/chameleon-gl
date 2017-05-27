@@ -29,11 +29,12 @@ set(SRC_FILES "")
         
 include_directories(${INCLUDE_DIRS})
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+
 add_executable(${EXECUTABLE_NAME} 
 	${SRC_FILES} 
 	src/simple_renderer.cpp)
 
 target_link_libraries(${EXECUTABLE_NAME} 
 	${LIBS})
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
