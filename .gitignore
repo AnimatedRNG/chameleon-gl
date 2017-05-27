@@ -1,0 +1,18 @@
+# Temporary files
+*~
+.*.swp
+.DS_STORE
+
+# Compiled files
+bin/
+Testing/
+
+# CMake-specific files
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+CTestTestfile.cmake
+Makefile
+cmake_install.cmake
+install_manifest.txt
+*.ninja
