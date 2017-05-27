@@ -1,5 +1,5 @@
 #include <iostream>
-#include "simple_renderer.h"
+#include "simple_renderer.hpp"
 
 SDFRenderer::SDFRenderer() {
 

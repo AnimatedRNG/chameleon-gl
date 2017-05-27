@@ -4,6 +4,9 @@
 #include <chrono>
 #include <thread>
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+
 #include "SDL.h"
 #include "SDL_image.h"
 
@@ -28,6 +31,9 @@ class SDFRenderer : public Renderer {
                             const int& pitch,
                             const int& width,
                             const int& height) override;
+ private:
+    glm::mat4 projection_matrix;
+    glm::mat4 view_matrix;
 };
 
 class GraphicsContext {
