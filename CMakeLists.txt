@@ -9,6 +9,7 @@ set(EXECUTABLE_NAME sdf_renderer)
 
 find_package(Threads REQUIRED)
 find_package(SDL2 REQUIRED)
+find_package(GLM REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-O3")
 
@@ -19,6 +20,7 @@ set(CMAKE_CXX_FLAGS "")
 
 set(INCLUDE_DIRS 
 	"${PROJECT_SOURCE_DIR}/include"
+        ${GLM_INCLUDE_DIRS}
         ${SDL2_INCLUDE_DIR})
 
 set(LIBS ${SDL2_LIBRARY})
