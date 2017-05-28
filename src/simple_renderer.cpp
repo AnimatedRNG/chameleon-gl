@@ -4,12 +4,12 @@
 
 SDFRenderer::SDFRenderer() :
     projection_matrix(),
-    view_matrix(glm::inverse(glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)))) {
+    view_matrix(glm::translate(glm::mat4(1), glm::vec3(-2, -2, -10))) {
 
 }
 
 inline float SDFRenderer::sdf(const glm::vec4& location) const {
-    return fancy_torus_sdf(location, glm::vec2(2, 1));
+    return fancy_torus_sdf(location, glm::vec2(3, 5));
 }
 
 inline float SDFRenderer::sphere_sdf(const glm::vec4& location,
@@ -54,38 +54,18 @@ void SDFRenderer::operator()(uint32_t* bytes,
             glm::vec3 ray_vec(tmp);
             ray_vec = glm::normalize(ray_vec);
 
-            glm::vec3 reprojected_1 = glm::vec3(glm::unProject(glm::vec3(i, height - j,
-                                                0.1),
-                                                view_matrix, projection_matrix, viewport));
-            glm::vec3 reprojected_2 = glm::vec3(glm::unProject(glm::vec3(i, height - j,
-                                                0.2),
-                                                view_matrix, projection_matrix, viewport));
-            glm::vec3 r2(glm::normalize(reprojected_2 - reprojected_1));
-            glm::vec3 r3(glm::normalize(reprojected_1 - origin));
-            glm::vec3 r4(origin + 1.0f * ray_vec);
-            glm::vec3 re_rasterized =
-                glm::project(
-                    r4,
-                    view_matrix,
-                    projection_matrix,
-                    viewport);
-            if (glm::length(glm::vec2(re_rasterized) - glm::vec2(i, height - j)) > 0.2) {
-                DEBUG("Original: " << glm::vec2(i, height - j) <<
-                      "; rasterized: " << re_rasterized);
-            }
-            DEBUG("r2: " << r2 << " ray_vec: " << ray_vec << " reprojected_1: " <<
-                  reprojected_1 << " r3: " << r3);
-
             glm::vec3 current_point = origin + ray_vec * NEAR;
             float radius = 0;
-            for (int k = 0; k < 0; k++) {
+            for (int k = 0; k < 20; k++) {
                 radius = sdf(glm::vec4(current_point, 1));
                 current_point += ray_vec * radius;
             }
 
+            float distance = glm::length(current_point - origin) / 200;
+
             if (radius < 1) {
                 bytes[offset] = (unsigned char)
-                                std::max(radius * 256, (float) 255.0);
+                                std::max(distance * 256, (float) 255.0);
             }
         }
     }
