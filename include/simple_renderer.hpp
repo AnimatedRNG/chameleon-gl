@@ -3,6 +3,8 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <cmath>
+#include <algorithm>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -31,9 +33,23 @@ class SDFRenderer : public Renderer {
                             const int& pitch,
                             const int& width,
                             const int& height) override;
- private:
+
+    inline virtual float sdf(const glm::vec4& location) const;
+  private:
+    inline virtual float sphere_sdf(const glm::vec4& location,
+                                    const float& radius) const;
+    inline virtual float fancy_torus_sdf(const glm::vec4& location,
+                                         const glm::vec2& t) const;
+    inline float length8(const glm::vec2& q) const {
+        return pow(pow(q.x, 8.) + pow(q.y, 8.), 1.0 / 8.0);
+    }
+
     glm::mat4 projection_matrix;
     glm::mat4 view_matrix;
+
+    constexpr static float FOVY = 60.0;
+    constexpr static float NEAR = 0.1;
+    constexpr static float FAR = 100;
 };
 
 class GraphicsContext {
@@ -52,7 +68,12 @@ class GraphicsContext {
     }
 
     void start(Renderer& renderer) {
-        while (mainloop(renderer));
+        for (long accum = 0; accum < 5000;) {
+            long dt = mainloop(renderer);
+            if (dt == -1)
+                return;
+            accum += dt;
+        }
     }
 
     ~GraphicsContext() {
@@ -61,18 +82,18 @@ class GraphicsContext {
         SDL_DestroyWindow(window);
     }
   private:
-    bool mainloop(Renderer& renderer) {
+    long mainloop(Renderer& renderer) {
         auto start = GET_TIME();
         SDL_Event event;
         SDL_PollEvent(&event);
 
         if (event.type == SDL_QUIT)
-            return false;
+            return -1;
 
         // Handle input here
 
         const SDL_Rect rect {0, 0, WIDTH, HEIGHT};
-        uint32_t * bytes = nullptr;
+        uint32_t* bytes = nullptr;
         int pitch = 0;
         int result = SDL_LockTexture(
                          render_texture, nullptr,
@@ -92,14 +113,38 @@ class GraphicsContext {
         }
         DEBUG("Frame time: " << diff);
 
-        return true;
+        return diff;
     }
 
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* render_texture;
 
-    constexpr static int WIDTH = 1920;
-    constexpr static int HEIGHT = 1080;
+    constexpr static int WIDTH = 640;
+    constexpr static int HEIGHT = 480;
     constexpr static int IDEAL_FRAME_TIME = 1000 / 60;
 };
+
+std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
+    out << "("
+        << vec.x << ", " << vec.y
+        << ")";
+
+    return out;
+}
+
+std::ostream& operator<< (std::ostream& out, const glm::vec3& vec) {
+    out << "("
+        << vec.x << ", " << vec.y << ", " << vec.z
+        << ")";
+
+    return out;
+}
+
+std::ostream& operator<< (std::ostream& out, const glm::vec4& vec) {
+    out << "("
+        << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w
+        << ")";
+
+    return out;
+}
