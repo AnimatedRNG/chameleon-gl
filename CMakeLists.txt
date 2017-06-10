@@ -8,6 +8,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/modules )
 set(EXECUTABLE_NAME sdf_renderer)
 
 find_package(Threads REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(GLM REQUIRED)
 
@@ -21,9 +23,14 @@ set(CMAKE_CXX_FLAGS "")
 set(INCLUDE_DIRS 
 	"${PROJECT_SOURCE_DIR}/include"
         ${GLM_INCLUDE_DIRS}
+        ${GLEW_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIR}
         ${SDL2_INCLUDE_DIR})
 
-set(LIBS ${SDL2_LIBRARY})
+set(LIBS
+        ${OPENGL_LIBRARIES}
+        ${GLEW_LIBRARIES}
+        ${SDL2_LIBRARY})
 
 set(SRC_FILES "")
         
