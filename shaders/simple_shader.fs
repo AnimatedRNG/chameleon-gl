@@ -17,6 +17,11 @@ float sdfTriPrism(in vec3 p, in vec2 h) {
     return max(q.z - h.y, max(q.x * 0.866025 + p.y * 0.5, -p.y) - h.x * 0.5);
 }
 
+float sdTorus(in vec3 p, in vec2 t) {
+    vec2 q = vec2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+
 vec3 opCheapBend(vec3 p) {
     float c = cos(0.1 * p.y);
     float s = sin(0.1 * p.y);
@@ -42,7 +47,7 @@ void main() {
     vec3 current_point = origin + ray_vec * NEAR;
     float radius = 0;
     for (int k = 0; k < 20; k++) {
-        radius = sdfTriPrism(opCheapBend(current_point), vec2(8, 8));
+        radius = sdTorus(opCheapBend(current_point), vec2(1, 7));
         current_point += ray_vec * radius;
     }
 
