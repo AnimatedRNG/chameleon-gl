@@ -203,6 +203,18 @@ class Program {
         glUseProgram(this->id);
     }
 
+    template <typename T>
+    void set_uniform(const std::string& name,
+                     T value) {
+        GLint location = glGetUniformLocation(id, name.c_str());
+        if (location == -1) {
+            ERROR("Could not find uniform " << name << "!" <<
+                  " Error: " << glGetError());
+            exit(1);
+        }
+        _set_uniform(location, value);
+    }
+
     ~Program() {
         glDeleteProgram(id);
         for (auto& shader : shader_ids)
@@ -210,6 +222,56 @@ class Program {
     }
 
   private:
+    template <typename T>
+    void _set_uniform(const GLint& location, T value) {
+        ERROR("Don't know what to do with a uniform like " <<
+              value << " bound at " << location);
+    }
+
+    void _set_uniform(const GLint& location, GLfloat value) {
+        glUniform1f(location, value);
+    }
+
+    void _set_uniform(const GLint& location, glm::vec2 value) {
+        glUniform2f(location, value.x, value.y);
+    }
+
+    void _set_uniform(const GLint& location, glm::vec3 value) {
+        glUniform3f(location, value.x, value.y, value.z);
+    }
+
+    void _set_uniform(const GLint& location, glm::vec4 value) {
+        glUniform4f(location, value.x, value.y, value.z, value.w);
+    }
+
+    void _set_uniform(const GLint& location, GLint value) {
+        glUniform1i(location, value);
+    }
+
+    void _set_uniform(const GLint& location, glm::ivec2 value) {
+        glUniform2i(location, value.x, value.y);
+    }
+
+    void _set_uniform(const GLint& location, glm::ivec3 value) {
+        glUniform3i(location, value.x, value.y, value.z);
+    }
+
+    void _set_uniform(const GLint& location, glm::ivec4 value) {
+        glUniform4i(location, value.x, value.y, value.z, value.w);
+    }
+
+    void _set_uniform(const GLint& location, glm::mat2 value) {
+        glUniformMatrix2fv(location, 1, GL_FALSE, &(value[0][0]));
+    }
+
+    void _set_uniform(const GLint& location, glm::mat3 value) {
+        glUniformMatrix3fv(location, 1, GL_FALSE, &(value[0][0]));
+    }
+
+    void _set_uniform(const GLint& location, glm::mat4 value) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, &(value[0][0]));
+    }
+
     GLuint id;
     std::vector<GLuint> shader_ids;
 };
@@ -352,8 +414,8 @@ class GraphicsContext {
     SDL_Texture* render_texture;
     SDL_GLContext context;
 
-    constexpr static int WIDTH = 640;
-    constexpr static int HEIGHT = 480;
+    constexpr static int WIDTH = 1920;
+    constexpr static int HEIGHT = 1080;
     constexpr static int IDEAL_FRAME_TIME = 1000 / 60;
 };
 

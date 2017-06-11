@@ -4,7 +4,7 @@
 
 SDFRenderer::SDFRenderer() :
     projection_matrix(),
-    view_matrix(glm::translate(glm::mat4(1), glm::vec3(-2, -2, -10))),
+    view_matrix(glm::translate(glm::mat4(1), glm::vec3(0, 0, -10))),
     program() {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -47,6 +47,21 @@ inline float SDFRenderer::fancy_torus_sdf(
 void SDFRenderer::operator()(const int& width,
                              const int& height) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
+    this->projection_matrix = glm::perspective(FOVY,
+                              (float) width / (float) height,
+                              NEAR,
+                              FAR);
+    glm::vec4 viewport(0, 0, width, height);
+    glm::vec3 origin(glm::inverse(view_matrix) * glm::vec4(0, 0, 0, 1));
+    glm::mat4 inverse(glm::inverse(projection_matrix * view_matrix));
+
+    program.set_uniform("origin", origin);
+    program.set_uniform("inv", inverse);
+    program.set_uniform("viewport", viewport);
+
+    program.set_uniform("NEAR", NEAR);
+    //program.set_uniform("FAR", FAR);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     program.bind();
     this->vbo.draw();
