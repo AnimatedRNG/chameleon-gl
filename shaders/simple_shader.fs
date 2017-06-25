@@ -9,7 +9,7 @@ uniform float NEAR;
 //uniform float FAR;
 
 float sdfSphere(in vec3 pos, in float radius) {
-    return length(pos);
+    return length(pos) - radius;
 }
 
 float sdfTriPrism(in vec3 p, in vec2 h) {
@@ -47,14 +47,14 @@ void main() {
     vec3 current_point = origin + ray_vec * NEAR;
     float radius = 0;
     for (int k = 0; k < 20; k++) {
-        radius = sdTorus(opCheapBend(current_point), vec2(1, 7));
+        radius = sdTorus(current_point, vec2(3, 2));
         current_point += ray_vec * radius;
     }
 
     float distance = length(current_point - origin);
 
     if (radius < 0.1)
-        color = vec3(dot(normalize(current_point), normalize(vec3(1, 1, 1))));
+        color = vec3(dot(normalize(current_point), normalize(vec3(0, -5, 0))));
     else
         color = vec3(0);
 }

@@ -45,12 +45,16 @@ inline float SDFRenderer::fancy_torus_sdf(
 }
 
 void SDFRenderer::operator()(const int& width,
-                             const int& height) {
+                             const int& height,
+                             InputController& controller) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
-    this->projection_matrix = glm::perspective(FOVY,
+    /*this->projection_matrix = glm::perspective(FOVY,
                               (float) width / (float) height,
                               NEAR,
-                              FAR);
+                              FAR);*/
+    this->projection_matrix = controller.get_projection();
+    this->view_matrix = controller.get_view();
+
     glm::vec4 viewport(0, 0, width, height);
     glm::vec3 origin(glm::inverse(view_matrix) * glm::vec4(0, 0, 0, 1));
     glm::mat4 inverse(glm::inverse(projection_matrix * view_matrix));
