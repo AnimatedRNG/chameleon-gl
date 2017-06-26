@@ -51,6 +51,14 @@ std::ostream& operator<< (std::ostream& out, const VertexAttribute& va) {
     return out;
 }
 
+std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
+    out << "("
+        << vec.x << ", " << vec.y
+        << ")";
+
+    return out;
+}
+
 class VBO {
   public:
     VBO() {

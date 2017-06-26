@@ -170,11 +170,3 @@ class GraphicsContext {
     constexpr static int HEIGHT = 900;
     constexpr static int IDEAL_FRAME_TIME = 1000 / 60;
 };
-
-std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
-    out << "("
-        << vec.x << ", " << vec.y
-        << ")";
-
-    return out;
-}
