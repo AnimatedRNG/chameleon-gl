@@ -112,7 +112,7 @@ class GraphicsContext {
     }
 
     void start(Renderer& renderer) {
-        for (long accum = 0; accum < 5000;) {
+        for (long accum = 0; accum >= 0;) {
             long dt = mainloop(renderer);
             if (dt == -1)
                 return;

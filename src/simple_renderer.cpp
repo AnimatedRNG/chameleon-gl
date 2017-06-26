@@ -48,10 +48,6 @@ void SDFRenderer::operator()(const int& width,
                              const int& height,
                              InputController& controller) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
-    /*this->projection_matrix = glm::perspective(FOVY,
-                              (float) width / (float) height,
-                              NEAR,
-                              FAR);*/
     this->projection_matrix = controller.get_projection();
     this->view_matrix = controller.get_view();
 
