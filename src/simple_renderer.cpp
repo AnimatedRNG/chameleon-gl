@@ -1,6 +1,3 @@
-#include <iostream>
-#include <algorithm>
-
 #include "simple_renderer.hpp"
 
 SDFRenderer::SDFRenderer(InputController& controller) :

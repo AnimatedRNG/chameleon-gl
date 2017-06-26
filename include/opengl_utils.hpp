@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 #include <cmath>
+#include <fstream>
+#include <streambuf>
 #include <algorithm>
 #include <vector>
 #include <unordered_set>
