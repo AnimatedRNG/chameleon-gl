@@ -11,16 +11,16 @@
 
 #include "util.hpp"
 #include "sdl_helpers.hpp"
+#include "event_handler.hpp"
 
-class InputController {
+class InputController : public EventHandler {
 
   public:
-    InputController(SDL::window_params* wp) :
+    InputController() :
         keypress_map(),
         current_mouse_position(0, 0),
         center(-1, -1),
         dont_update(false),
-        wp(wp),
         model(),
         view(),
         projection() {
@@ -61,7 +61,8 @@ class InputController {
         this->aspect_ratio = ratio;
     }
 
-    void on_event(SDL_Event& event) {
+    void on_event(SDL_Event& event, SDL::window_params* wp) {
+        this->wp = wp;
         switch (event.type) {
             case SDL_KEYDOWN:
                 keypress_map.insert(event.key.keysym.sym);
@@ -80,67 +81,67 @@ class InputController {
         }
     }
 
-    void update() {
+    void update() override {
         if (this->center == glm::ivec2(-1, -1)) {
-        this->center = glm::ivec2(wp->width / 2, wp->height / 2);
-    }
-
-    uint64_t dt = INPUT_DELAY;
-    glm::ivec2 mouse_delta = center - current_mouse_position;
-    if (mouse_delta.x + mouse_delta.y < 200) {
-        horizontal_angle += MOUSE_SPEED * dt * ((float) mouse_delta.x);
-        vertical_angle += MOUSE_SPEED * dt * ((float) mouse_delta.y);
-    }
-
-    // Clamps vertical viewing angles
-    vertical_angle = std::min(vertical_angle, 3.14f / 2.0f);
-    vertical_angle = std::max(vertical_angle, -3.14f / 2.0f);
-
-    glm::vec3 direction(cos(vertical_angle) * sin(horizontal_angle),
-                        sin(vertical_angle),
-                        cos(vertical_angle) * cos(horizontal_angle));
-    glm::vec3 right_vector(sin(horizontal_angle - 3.14f / 2.0f),
-                           0,
-                           cos(horizontal_angle - 3.14f / 2.0f));
-    glm::vec3 up_vector = glm::cross(right_vector, direction);
-    for (int key : keypress_map) {
-        if (key == SDLK_w) {
-            position += direction * (float) dt * MOVE_SPEED;
+            this->center = glm::ivec2(wp->width / 2, wp->height / 2);
         }
-        if (key == SDLK_s) {
-            position -= direction * (float) dt * MOVE_SPEED;
-        }
-        if (key == SDLK_a) {
-            position -= right_vector * (float) dt * MOVE_SPEED;
-        }
-        if (key == SDLK_d) {
-            position += right_vector * (float) dt * MOVE_SPEED;
-        }
-        if (key == SDLK_z) {
-            position -= up_vector * (float) dt * MOVE_SPEED;
-        }
-        if (key == SDLK_x) {
-            position += up_vector * (float) dt * MOVE_SPEED;
-        }
-    }
 
-    if (dont_update)
-        return;
+        uint64_t dt = INPUT_DELAY;
+        glm::ivec2 mouse_delta = center - current_mouse_position;
+        if (mouse_delta.x + mouse_delta.y < 200) {
+            horizontal_angle += MOUSE_SPEED * dt * ((float) mouse_delta.x);
+            vertical_angle += MOUSE_SPEED * dt * ((float) mouse_delta.y);
+        }
 
-    glm::mat4 projection;
-    glm::mat4 view;
-    projection = glm::perspective(initial_fov, aspect_ratio,
-                                  InputController::NEAR_PLANE,
-                                  InputController::FAR_PLANE);
-    view = glm::lookAt(position,
-                       position + direction,
-                       up_vector);
+        // Clamps vertical viewing angles
+        vertical_angle = std::min(vertical_angle, 3.14f / 2.0f);
+        vertical_angle = std::max(vertical_angle, -3.14f / 2.0f);
 
-    this->model = glm::mat4();
-    this->projection = projection;
-    this->view = view;
+        glm::vec3 direction(cos(vertical_angle) * sin(horizontal_angle),
+                            sin(vertical_angle),
+                            cos(vertical_angle) * cos(horizontal_angle));
+        glm::vec3 right_vector(sin(horizontal_angle - 3.14f / 2.0f),
+                               0,
+                               cos(horizontal_angle - 3.14f / 2.0f));
+        glm::vec3 up_vector = glm::cross(right_vector, direction);
+        for (int key : keypress_map) {
+            if (key == SDLK_w) {
+                position += direction * (float) dt * MOVE_SPEED;
+            }
+            if (key == SDLK_s) {
+                position -= direction * (float) dt * MOVE_SPEED;
+            }
+            if (key == SDLK_a) {
+                position -= right_vector * (float) dt * MOVE_SPEED;
+            }
+            if (key == SDLK_d) {
+                position += right_vector * (float) dt * MOVE_SPEED;
+            }
+            if (key == SDLK_z) {
+                position -= up_vector * (float) dt * MOVE_SPEED;
+            }
+            if (key == SDLK_x) {
+                position += up_vector * (float) dt * MOVE_SPEED;
+            }
+        }
 
-    current_mouse_position = center;
+        if (dont_update)
+            return;
+
+        glm::mat4 projection;
+        glm::mat4 view;
+        projection = glm::perspective(initial_fov, aspect_ratio,
+                                      InputController::NEAR_PLANE,
+                                      InputController::FAR_PLANE);
+        view = glm::lookAt(position,
+                           position + direction,
+                           up_vector);
+
+        this->model = glm::mat4();
+        this->projection = projection;
+        this->view = view;
+
+        current_mouse_position = center;
     };
 
     static constexpr int INPUT_DELAY = 10;

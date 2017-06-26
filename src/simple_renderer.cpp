@@ -1,11 +1,13 @@
 #include <iostream>
 #include <algorithm>
+
 #include "simple_renderer.hpp"
 
-SDFRenderer::SDFRenderer() :
+SDFRenderer::SDFRenderer(InputController& controller) :
     projection_matrix(),
     view_matrix(glm::translate(glm::mat4(1), glm::vec3(0, 0, -10))),
-    program() {
+    program(),
+    ctrl(controller) {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
@@ -45,11 +47,10 @@ inline float SDFRenderer::fancy_torus_sdf(
 }
 
 void SDFRenderer::operator()(const int& width,
-                             const int& height,
-                             InputController& controller) {
+                             const int& height) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
-    this->projection_matrix = controller.get_projection();
-    this->view_matrix = controller.get_view();
+    this->projection_matrix = ctrl.get_projection();
+    this->view_matrix = ctrl.get_view();
 
     glm::vec4 viewport(0, 0, width, height);
     glm::vec3 origin(glm::inverse(view_matrix) * glm::vec4(0, 0, 0, 1));
@@ -68,7 +69,8 @@ void SDFRenderer::operator()(const int& width,
 }
 
 int main(int argc, char** args) {
-    GraphicsContext context;
-    SDFRenderer renderer;
+    InputController input;
+    GraphicsContext context(input);
+    SDFRenderer renderer(input);
     context.start(renderer);
 }

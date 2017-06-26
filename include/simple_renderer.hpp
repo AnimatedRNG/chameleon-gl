@@ -28,17 +28,15 @@
 class Renderer {
   public:
     virtual void operator()(const int& width,
-                            const int& height,
-                            InputController& controller) = 0;
+                            const int& height) = 0;
 };
 
 class SDFRenderer : public Renderer {
   public:
-    explicit SDFRenderer();
+    explicit SDFRenderer(InputController& controller);
 
     virtual void operator()(const int& width,
-                            const int& height,
-                            InputController& controller) override;
+                            const int& height) override;
 
     inline virtual float sdf(const glm::vec4& location) const;
   private:
@@ -55,6 +53,7 @@ class SDFRenderer : public Renderer {
     Program program;
     GLuint vao;
     VBO vbo;
+    InputController& ctrl;
 
     constexpr static float FOVY = 60.0;
     constexpr static float NEAR = 0.1;
@@ -73,8 +72,8 @@ class SDFRenderer : public Renderer {
 
 class GraphicsContext {
   public:
-    GraphicsContext() :
-        input(&wp) {
+    GraphicsContext(EventHandler& ev_handler) :
+        handler(ev_handler) {
         SDL_Init(SDL_INIT_EVERYTHING);
         this->wp.window =
             SDL_CreateWindow("SDF Renderer", SDL_WINDOWPOS_UNDEFINED,
@@ -142,15 +141,13 @@ class GraphicsContext {
         auto start = GET_TIME();
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            input.on_event(event);
+            handler.on_event(event, &wp);
             if (event.type == SDL_QUIT)
                 return -1;
         }
 
-        // Handle input here
-
         SDL_Rect viewport = {0, 0, WIDTH, HEIGHT};
-        renderer(viewport.w, viewport.h, input);
+        renderer(viewport.w, viewport.h);
         SDL_GL_SwapWindow(this->wp.window);
 
         auto end = GET_TIME();
@@ -167,7 +164,7 @@ class GraphicsContext {
     SDL_Texture* render_texture;
     SDL::window_params wp;
 
-    InputController input;
+    EventHandler& handler;
 
     constexpr static int WIDTH = 1600;
     constexpr static int HEIGHT = 900;
