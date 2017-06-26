@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -200,7 +201,13 @@ class Program {
     template <typename T>
     void set_uniform(const std::string& name,
                      T value) {
-        GLint location = glGetUniformLocation(id, name.c_str());
+        GLint location;
+        if (uniform_cache.count(name))
+            location = uniform_cache[name];
+        else {
+            location = glGetUniformLocation(id, name.c_str());
+            uniform_cache[name] = location;
+        }
         if (location == -1) {
             ERROR("Could not find uniform " << name << "!" <<
                   " Error: " << glGetError());
@@ -267,5 +274,6 @@ class Program {
     }
 
     GLuint id;
-    std::vector<GLuint> shader_ids;
+    std::vector<GLint> shader_ids;
+    std::unordered_map<std::string, GLint> uniform_cache;
 };
