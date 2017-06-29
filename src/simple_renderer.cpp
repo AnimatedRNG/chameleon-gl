@@ -23,24 +23,6 @@ SDFRenderer::SDFRenderer(InputController& controller) :
     glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
-inline float SDFRenderer::sdf(const glm::vec4& location) const {
-    return fancy_torus_sdf(location, glm::vec2(3, 5));
-}
-
-inline float SDFRenderer::sphere_sdf(const glm::vec4& location,
-                                     const float& radius) const {
-    return glm::length(location) - radius;
-}
-
-inline float SDFRenderer::fancy_torus_sdf(
-    const glm::vec4& location,
-    const glm::vec2& t) const {
-    glm::vec2 q(length8(glm::vec2(location.x, location.z)) - t.x,
-                location.y);
-
-    return length8(q) - t.y;
-}
-
 void SDFRenderer::operator()(const int& width,
                              const int& height) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -56,7 +38,6 @@ void SDFRenderer::operator()(const int& width,
     program.set_uniform("viewport", viewport);
 
     program.set_uniform("NEAR", InputController::NEAR_PLANE);
-    //program.set_uniform("FAR", FAR);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     program.bind();

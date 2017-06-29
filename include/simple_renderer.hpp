@@ -24,17 +24,7 @@ class SDFRenderer : public Renderer {
 
     virtual void operator()(const int& width,
                             const int& height) override;
-
-    inline virtual float sdf(const glm::vec4& location) const;
   private:
-    inline virtual float sphere_sdf(const glm::vec4& location,
-                                    const float& radius) const;
-    inline virtual float fancy_torus_sdf(const glm::vec4& location,
-                                         const glm::vec2& t) const;
-    inline float length8(const glm::vec2& q) const {
-        return pow(pow(q.x, 8.) + pow(q.y, 8.), 1.0 / 8.0);
-    }
-
     Program program;
     GLuint vao;
     VBO vbo;
