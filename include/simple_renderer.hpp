@@ -35,16 +35,10 @@ class SDFRenderer : public Renderer {
         return pow(pow(q.x, 8.) + pow(q.y, 8.), 1.0 / 8.0);
     }
 
-    glm::mat4 projection_matrix;
-    glm::mat4 view_matrix;
     Program program;
     GLuint vao;
     VBO vbo;
     InputController& ctrl;
-
-    constexpr static float FOVY = 60.0;
-    constexpr static float NEAR = 0.1;
-    constexpr static float FAR = 100;
 
     // The fullscreen quad's VBO
     const GLfloat quad_vertex_buffer_data[18] = {
