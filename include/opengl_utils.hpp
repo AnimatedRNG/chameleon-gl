@@ -24,7 +24,7 @@ typedef struct {
     GLvoid* offset;
 } VertexAttribute;
 
-std::ostream& operator<< (std::ostream& out, const glm::vec3& vec) {
+inline std::ostream& operator<< (std::ostream& out, const glm::vec3& vec) {
     out << "("
         << vec.x << ", " << vec.y << ", " << vec.z
         << ")";
@@ -32,7 +32,7 @@ std::ostream& operator<< (std::ostream& out, const glm::vec3& vec) {
     return out;
 }
 
-std::ostream& operator<< (std::ostream& out, const glm::vec4& vec) {
+inline std::ostream& operator<< (std::ostream& out, const glm::vec4& vec) {
     out << "("
         << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w
         << ")";
@@ -40,7 +40,7 @@ std::ostream& operator<< (std::ostream& out, const glm::vec4& vec) {
     return out;
 }
 
-std::ostream& operator<< (std::ostream& out, const VertexAttribute& va) {
+inline std::ostream& operator<< (std::ostream& out, const VertexAttribute& va) {
     out << "(index: "
         << va.index
         << ", vector_size: "
@@ -54,7 +54,7 @@ std::ostream& operator<< (std::ostream& out, const VertexAttribute& va) {
     return out;
 }
 
-std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
+inline std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
     out << "("
         << vec.x << ", " << vec.y
         << ")";
