@@ -41,7 +41,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 add_executable(${EXECUTABLE_NAME} 
 	${SRC_FILES} 
-	src/simple_renderer.cpp)
+	src/main.cpp)
 
 target_link_libraries(${EXECUTABLE_NAME} 
 	${LIBS})
