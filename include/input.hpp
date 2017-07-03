@@ -12,6 +12,7 @@
 #include "util.hpp"
 #include "sdl_helpers.hpp"
 #include "event_handler.hpp"
+#include "opengl_utils.hpp"
 
 class InputController : public EventHandler {
 
@@ -46,15 +47,15 @@ class InputController : public EventHandler {
         SDL_SetRelativeMouseMode(SDL_FALSE);
     }
 
-    glm::mat4 get_model() {
-        return model;
+    glm::mat4 get_model() const {
+        return this->model;
     }
 
-    glm::mat4 get_view() {
-        return view;
+    glm::mat4 get_view() const {
+        return this->view;
     }
-    glm::mat4 get_projection() {
-        return projection;
+    glm::mat4 get_projection() const {
+        return this->projection;
     }
 
     void set_aspect_ratio(const float& ratio) {
@@ -72,7 +73,7 @@ class InputController : public EventHandler {
                 break;
             case SDL_MOUSEMOTION:
                 current_mouse_position +=
-                    glm::ivec2(event.motion.xrel, -event.motion.yrel);
+                    glm::ivec2(event.motion.xrel, event.motion.yrel);
                 break;
             case SDL_USEREVENT:
                 this->update();
@@ -162,8 +163,6 @@ class InputController : public EventHandler {
     glm::ivec2 current_mouse_position;
     glm::ivec2 center;
     bool dont_update;
-
-    SDL_TimerID timer;
 
     SDL::window_params* wp;
 

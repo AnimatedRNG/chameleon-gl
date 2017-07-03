@@ -7,6 +7,9 @@
 bin/
 Testing/
 
+# Assets
+assets/
+
 # CMake-specific files
 CMakeCache.txt
 CMakeFiles

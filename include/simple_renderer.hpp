@@ -26,12 +26,14 @@ class SDFRenderer : public Renderer {
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
 
-        program.compile_shader("shaders/simple_shader.vs", GL_VERTEX_SHADER);
-        program.compile_shader("shaders/simple_shader.fs", GL_FRAGMENT_SHADER);
+        program.compile_shader("shaders/sdf_shader.vs", GL_VERTEX_SHADER);
+        program.compile_shader("shaders/sdf_shader.fs", GL_FRAGMENT_SHADER);
         program.link_program();
 
         const std::vector<VertexAttribute> attribs({{0, 3, 0, 0}});
-        this->vbo = VBO(SDFRenderer::quad_vertex_buffer_data,
+        std::vector<GLfloat*> vertex_data;
+        vertex_data.push_back((GLfloat*) SDFRenderer::quad_vertex_buffer_data);
+        this->vbo = VBO(vertex_data,
                         attribs,
                         sizeof(SDFRenderer::quad_vertex_buffer_data) /
                         sizeof(SDFRenderer::quad_vertex_buffer_data[0]),
@@ -45,7 +47,6 @@ class SDFRenderer : public Renderer {
 
     virtual void operator()(const int& width,
                             const int& height) override {
-        glClearColor(0.0, 0.0, 0.0, 1.0);
         glm::mat4 projection_matrix = ctrl.get_projection();
         glm::mat4 view_matrix = ctrl.get_view();
 
@@ -53,6 +54,7 @@ class SDFRenderer : public Renderer {
         glm::vec3 origin(glm::inverse(view_matrix) * glm::vec4(0, 0, 0, 1));
         glm::mat4 inverse(glm::inverse(projection_matrix * view_matrix));
 
+        program.bind();
         program.set_uniform("origin", origin);
         program.set_uniform("inv", inverse);
         program.set_uniform("viewport", viewport);
@@ -60,7 +62,6 @@ class SDFRenderer : public Renderer {
         program.set_uniform("NEAR", InputController::NEAR_PLANE);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        program.bind();
         this->vbo.draw();
     }
 

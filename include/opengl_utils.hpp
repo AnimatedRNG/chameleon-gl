@@ -5,6 +5,8 @@
 #include <streambuf>
 #include <algorithm>
 #include <vector>
+#include <assert.h>
+#include <cstring>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -16,6 +18,7 @@
 #include <GL/glew.h>
 
 #include "util.hpp"
+#include "gl_context.hpp"
 
 typedef struct {
     GLuint index;
@@ -62,25 +65,56 @@ inline std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
     return out;
 }
 
+inline std::ostream& operator<< (std::ostream& out, const glm::mat4& mat4) {
+    out << "["
+        << mat4[0][0] << ", " << mat4[0][1] << ", " << mat4[0][2] << ", " << mat4[0][3]
+        << "\n "
+        << mat4[1][0] << ", " << mat4[1][1] << ", " << mat4[1][2] << ", " << mat4[1][3]
+        << "\n "
+        << mat4[2][0] << ", " << mat4[2][1] << ", " << mat4[2][2] << ", " << mat4[2][3]
+        << "\n "
+        << mat4[3][0] << ", " << mat4[3][1] << ", " << mat4[3][2] << ", " << mat4[3][3]
+        << "]";
+
+    return out;
+}
+
 class VBO {
   public:
     VBO() {
 
     }
 
-    VBO(const GLfloat* vertex_data,
-        std::vector<VertexAttribute> vertex_attributes,
+    VBO(const std::vector<GLfloat*>& vertex_data,
+        const std::vector<VertexAttribute>& vertex_attributes,
         GLuint num_vertices,
         GLenum primitive_type) :
-        _vertex_data(vertex_data),
         _vertex_attributes(vertex_attributes),
         _primitive_type(primitive_type),
         _num_vertices(num_vertices) {
-        glGenBuffers(1, &_vertex_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER, num_vertices * sizeof(GLfloat),
-                     &(_vertex_data[0]), GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        this->_vertex_buffer = new GLuint[vertex_data.size()];
+        glGenBuffers(vertex_data.size(), _vertex_buffer);
+        for (size_t i = 0; i < vertex_data.size(); i++) {
+            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer[i]);
+            auto va = vertex_attributes[i];
+            glBufferData(GL_ARRAY_BUFFER,
+                         num_vertices * va.vector_size * sizeof(GLfloat),
+                         &(vertex_data[i][0]),
+                         GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+        assert(_vertex_attributes.size() == vertex_data.size());
+    }
+
+    VBO(const VBO& other) {
+        this->_num_vertices = other._num_vertices;
+        this->_vertex_buffer = new GLuint[other._vertex_attributes.size()];
+        this->_primitive_type = other._primitive_type;
+        this->_vertex_attributes = other._vertex_attributes;
+    }
+
+    ~VBO() {
+        //delete this->_vertex_buffer;
     }
 
     bool draw() {
@@ -95,7 +129,7 @@ class VBO {
             }
 
             glEnableVertexAttribArray(va.index);
-            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer[i]);
             glVertexAttribPointer(
                 i,
                 va.vector_size,
@@ -104,6 +138,7 @@ class VBO {
                 va.stride,
                 va.offset
             );
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             indices.insert(va.index);
         }
 
@@ -118,11 +153,180 @@ class VBO {
         return true;
     }
   private:
-    GLuint _vertex_buffer;
-    const GLfloat* _vertex_data;
+    GLuint* _vertex_buffer;
     std::vector<VertexAttribute> _vertex_attributes;
     GLenum _primitive_type;
     GLuint _num_vertices;
+};
+
+enum TextureParameter {
+    WRAP_ST_CLAMP_TO_BORDER,
+    WRAP_ST_CLAMP_TO_EDGE,
+    WRAP_ST_REPEAT,
+    WRAP_ST_MIRRORED_REPEAT,
+
+    FILTER_MIN_MAG_NEAREST,
+    FILTER_MIN_MAG_LINEAR
+};
+typedef std::unordered_set<TextureParameter> TextureParameterSet;
+
+class Texture {
+  public:
+    Texture(const GLenum& texture_enum,
+            const int& w,
+            const int& h,
+            const int& d = 1) :
+        width(w),
+        height(h),
+        depth(d),
+        _texture_enum(texture_enum) {
+        glGenTextures(1, &id);
+    }
+
+    Texture(const std::string& filename,
+            const GLint& internalFormat,
+            const TextureParameterSet parameters,
+            const GLint& level = 0,
+            const bool& mip_map = true,
+            void (*tex_parameter_callback)(void) = NULL) {
+        _texture_enum = GL_TEXTURE_2D;
+        load_from_file(filename,
+                       internalFormat,
+                       parameters,
+                       level,
+                       mip_map,
+                       tex_parameter_callback);
+    }
+
+    ~Texture() {
+        // Maybe be a good custodian and unbind the names here?
+    }
+
+    void load_from_file(const std::string& filename,
+                        const GLint& internalFormat,
+                        const TextureParameterSet parameters,
+                        const GLint& level = 0,
+                        const bool& mip_map = true,
+                        void (*tex_parameter_callback)(void) = NULL) {
+        ImageData data =
+            GLContext::get_image(GLContext::load_image(filename));
+
+        this->width = data.width;
+        this->height = data.height;
+        this->depth = 1;
+        init(parameters,
+             level,
+             internalFormat,
+             data.format,
+             GL_UNSIGNED_BYTE,
+             data.data,
+             mip_map,
+             tex_parameter_callback);
+    }
+
+    void init(const TextureParameterSet parameters,
+              const GLint& level,
+              const GLint& internalFormat,
+              const GLenum& format,
+              const GLenum& type,
+              const GLvoid* data,
+              const bool& mip_map = true,
+              void (*tex_parameter_callback)(void) = NULL) {
+        glBindTexture(_texture_enum, id);
+        assert(parameters.size() == 0 ^ tex_parameter_callback == NULL);
+        if (tex_parameter_callback != NULL) {
+            tex_parameter_callback();
+        } else {
+            for (auto parameter : parameters) {
+                apply_parameter(parameter);
+            }
+        }
+        glTexImage2D(_texture_enum, level, internalFormat,
+                     (GLsizei) width, (GLsizei) height, 0,
+                     format, type, data);
+        if (mip_map) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                            GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                            GL_LINEAR_MIPMAP_LINEAR);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+
+        _internalFormat = internalFormat;
+        _format = format;
+        _type = type;
+
+        glBindTexture(_texture_enum, 0);
+    }
+
+    void clear(const GLint& level,
+               const GLvoid* data,
+               glm::ivec4 region = glm::ivec4(-1),
+               glm::ivec2 region_z = glm::ivec2(-1)) {
+        if (GLEW_ARB_clear_texture) {
+            glm::ivec4 adjusted_region;
+            glm::ivec2 adjusted_region_z;
+            if (region == glm::ivec4(-1)) {
+                adjusted_region = glm::ivec4(0, 0, width, height);
+            }
+            if (region_z == glm::ivec2(-1)) {
+                adjusted_region_z = glm::ivec2(0, depth);
+            }
+
+            glClearTexSubImage(
+                id, level,
+                region.x, region.y, region_z.x,
+                region.z, region.w, region_z.y,
+                _format, _type,
+                data);
+        }
+    }
+
+    void bind() {
+        this->texture_image_unit = GLContext::get_texturing_unit();
+
+        glActiveTexture(texture_image_unit);
+        glBindTexture(_texture_enum, id);
+    }
+
+    GLuint id;
+    GLint texture_image_unit;
+    int width, height, depth;
+  private:
+
+    void apply_parameter(const TextureParameter& parameter) {
+        switch (parameter) {
+            case WRAP_ST_CLAMP_TO_BORDER:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                break;
+            case WRAP_ST_CLAMP_TO_EDGE:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                break;
+            case WRAP_ST_REPEAT:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                break;
+            case WRAP_ST_MIRRORED_REPEAT:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                break;
+            case FILTER_MIN_MAG_NEAREST:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                break;
+            case FILTER_MIN_MAG_LINEAR:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                break;
+        }
+    }
+
+    GLenum _texture_enum;
+
+    GLenum _format, _type;
+    GLint _internalFormat;
 };
 
 class Program {
@@ -271,6 +475,10 @@ class Program {
 
     void _set_uniform(const GLint& location, glm::mat4 value) {
         glUniformMatrix4fv(location, 1, GL_FALSE, &(value[0][0]));
+    }
+
+    void _set_uniform(const GLint& location, Texture& value) {
+        glUniform1i(location, value.texture_image_unit);
     }
 
     GLuint id;

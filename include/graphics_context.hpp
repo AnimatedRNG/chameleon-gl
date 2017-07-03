@@ -3,13 +3,16 @@
 #include <iostream>
 #include <thread>
 
-#include "event_handler.hpp"
-#include "sdl_helpers.hpp"
-
 // OpenGL / glew Headers
 #define GL3_PROTOTYPES 1
 #include <GL/glew.h>
 
+#include "SDL.h"
+#include "SDL_image.h"
+
+#include "event_handler.hpp"
+#include "sdl_helpers.hpp"
+#include "gl_context.hpp"
 #include "renderer.hpp"
 
 class GraphicsContext {
@@ -17,6 +20,7 @@ class GraphicsContext {
     GraphicsContext(EventHandler& ev_handler) :
         handler(ev_handler) {
         SDL_Init(SDL_INIT_EVERYTHING);
+        IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
         this->wp.window =
             SDL_CreateWindow("SDF Renderer", SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT,
@@ -50,6 +54,7 @@ class GraphicsContext {
             SDL_CreateTexture(
                 this->wp.renderer, SDL_PIXELFORMAT_RGB888,
                 SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+        GLContext::gl_init();
     }
 
     void start(Renderer& renderer) {
@@ -66,6 +71,7 @@ class GraphicsContext {
         SDL_DestroyTexture(render_texture);
         SDL_DestroyRenderer(this->wp.renderer);
         SDL_DestroyWindow(this->wp.window);
+        IMG_Quit();
         SDL_Quit();
     }
   private:
@@ -88,6 +94,7 @@ class GraphicsContext {
                 return -1;
         }
 
+        GLContext::gl_refresh();
         SDL_Rect viewport = {0, 0, WIDTH, HEIGHT};
         renderer(viewport.w, viewport.h);
         SDL_GL_SwapWindow(this->wp.window);

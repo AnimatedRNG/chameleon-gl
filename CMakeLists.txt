@@ -11,6 +11,7 @@ find_package(Threads REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
 find_package(GLM REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-O3")
@@ -25,12 +26,14 @@ set(INCLUDE_DIRS
         ${GLM_INCLUDE_DIRS}
         ${GLEW_INCLUDE_DIRS}
         ${OPENGL_INCLUDE_DIR}
-        ${SDL2_INCLUDE_DIR})
+        ${SDL2_INCLUDE_DIR}
+        ${SDL2_IMAGE_INCLUDE_DIR})
 
 set(LIBS
         ${OPENGL_LIBRARIES}
         ${GLEW_LIBRARIES}
-        ${SDL2_LIBRARY})
+        ${SDL2_LIBRARY}
+        ${SDL2_IMAGE_LIBRARY})
 
 set(SRC_FILES "")
         
