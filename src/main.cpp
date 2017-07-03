@@ -1,7 +1,7 @@
 #include "gl_context.hpp"
 #include "input.hpp"
 #include "graphics_context.hpp"
-#include "simple_renderer.hpp"
+#include "sdf_renderer.hpp"
 #include "mesh_renderer.hpp"
 #include "mesh.hpp"
 #include "texture_renderer.hpp"
