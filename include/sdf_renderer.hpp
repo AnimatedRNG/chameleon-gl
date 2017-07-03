@@ -34,7 +34,7 @@ class SDFRenderer : public Renderer {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
-        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClearColor(0.0, 0.0, 0.0, 0.0);
     }
 
     virtual void operator()(const int& width,
