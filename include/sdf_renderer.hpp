@@ -13,6 +13,7 @@
 
 #include "util.hpp"
 #include "opengl_utils.hpp"
+#include "mesh.hpp"
 #include "input.hpp"
 #include "sdl_helpers.hpp"
 #include "renderer.hpp"
@@ -22,22 +23,13 @@ class SDFRenderer : public Renderer {
   public:
     explicit SDFRenderer(InputController& controller) :
         program(),
+        mesh(),
         ctrl(controller) {
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
         program.compile_shader("shaders/sdf_shader.vs", GL_VERTEX_SHADER);
         program.compile_shader("shaders/sdf_shader.fs", GL_FRAGMENT_SHADER);
         program.link_program();
 
-        const std::vector<VertexAttribute> attribs({{0, 3, 0, 0}});
-        std::vector<GLfloat*> vertex_data;
-        vertex_data.push_back((GLfloat*) SDFRenderer::quad_vertex_buffer_data);
-        this->vbo = VBO(vertex_data,
-                        attribs,
-                        sizeof(SDFRenderer::quad_vertex_buffer_data) /
-                        sizeof(SDFRenderer::quad_vertex_buffer_data[0]),
-                        GL_TRIANGLES);
+        mesh = Mesh::construct_fullscreen_quad();
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -62,22 +54,12 @@ class SDFRenderer : public Renderer {
         program.set_uniform("NEAR", InputController::NEAR_PLANE);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        this->vbo.draw();
+        mesh.draw();
     }
 
   private:
     Program program;
     GLuint vao;
-    VBO vbo;
+    Mesh mesh;
     InputController& ctrl;
-
-    // The fullscreen quad's VBO
-    const GLfloat quad_vertex_buffer_data[18] = {
-        -1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        1.0f,  1.0f, 0.0f,
-    };
 };
