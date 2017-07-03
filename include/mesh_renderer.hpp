@@ -22,9 +22,6 @@ class MeshRenderer : public Renderer {
         program(),
         ctrl(controller),
         mesh(mesh) {
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
         program.compile_shader("shaders/simple_shader.vs", GL_VERTEX_SHADER);
         program.compile_shader("shaders/simple_shader.fs", GL_FRAGMENT_SHADER);
         program.link_program();
@@ -50,7 +47,6 @@ class MeshRenderer : public Renderer {
     }
   private:
     Program program;
-    GLuint vao;
     InputController& ctrl;
     Mesh& mesh;
 };
