@@ -31,5 +31,5 @@ namespace SDL {
         SDL_GLContext gl_context;
         int width;
         int height;
-    } window_params;
+    } WindowParams;
 }

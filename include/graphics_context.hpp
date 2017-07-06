@@ -131,7 +131,7 @@ class GraphicsContext {
     }
 
     SDL_Texture* render_texture;
-    SDL::window_params wp;
+    SDL::WindowParams wp;
 
     EventHandler& handler;
 

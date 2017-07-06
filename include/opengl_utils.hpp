@@ -192,6 +192,9 @@ typedef std::unordered_set<TextureParameter> TextureParameterSet;
 
 class Texture {
   public:
+    // Don't use this constructor. Creates zombie object.
+    Texture() {}
+
     Texture(const GLenum& texture_enum,
             const int& w,
             const int& h,
@@ -273,7 +276,7 @@ class Texture {
         }
 
         _internalFormat = internalFormat;
-        _format = format;
+        this->format = format;
         _type = type;
 
         glBindTexture(_texture_enum, 0);
@@ -297,21 +300,25 @@ class Texture {
                 id, level,
                 region.x, region.y, region_z.x,
                 region.z, region.w, region_z.y,
-                _format, _type,
+                format, _type,
                 data);
         }
     }
 
-    void bind() {
-        this->texture_image_unit = GLContext::get_texturing_unit();
+    void bind(const bool& active_texture = true) {
+        if (active_texture) {
+            this->texture_image_unit = GLContext::get_texturing_unit();
+            glActiveTexture(texture_image_unit);
+        }
 
-        glActiveTexture(texture_image_unit);
         glBindTexture(_texture_enum, id);
     }
 
     GLuint id;
     GLint texture_image_unit;
     int width, height, depth;
+
+    GLenum format;
   private:
 
     void apply_parameter(const TextureParameter& parameter) {
@@ -345,7 +352,7 @@ class Texture {
 
     GLenum _texture_enum;
 
-    GLenum _format, _type;
+    GLenum _type;
     GLint _internalFormat;
 };
 
@@ -504,4 +511,215 @@ class Program {
     GLuint id;
     std::vector<GLint> shader_ids;
     std::unordered_map<std::string, GLint> uniform_cache;
+};
+
+class Framebuffer {
+  public:
+    explicit Framebuffer() :
+        textures(),
+        draw_buffers(),
+        width(-1),
+        height(-1) {
+        glGenFramebuffers(1, &id);
+    }
+
+    explicit Framebuffer(const int w, const int h, const bool& typical,
+                         const GLenum& format = GL_RGBA,
+                         const GLenum& internal_format = GL_RGBA32F,
+                         const GLenum& type = GL_UNSIGNED_BYTE) :
+        textures(),
+        draw_buffers(),
+        width(w),
+        height(h) {
+        glGenFramebuffers(1, &id);
+        if (typical) {
+            typical_fbo(format, internal_format, type);
+        }
+    }
+
+    void on_resize(const int& width, const int& height) {
+        this->width = width;
+        this->height = height;
+    }
+
+    void bind_textures(std::unordered_map<std::string, Texture> attachments) {
+        int index = 0;
+        for (auto attachment = attachments.begin();
+                attachment != attachments.end();
+                attachment++) {
+            if (attachment->second.format != GL_DEPTH_COMPONENT) {
+                GLenum attachment_point = get_color_attachment_point(index++);
+                bind_texture(attachment->first,
+                             attachment_point,
+                             attachment->second);
+            } else {
+                bind_texture(attachment->first,
+                             GL_DEPTH_ATTACHMENT,
+                             attachment->second);
+            }
+        }
+    }
+
+    void bind_texture(const std::string name,
+                      const GLenum& attachment_point,
+                      Texture& texture,
+                      const int& level = 0) {
+        glBindFramebuffer(GL_FRAMEBUFFER, id);
+        texture.bind(false);
+        glFramebufferTexture(GL_FRAMEBUFFER,
+                             attachment_point,
+                             texture.id,
+                             level);
+
+        assert(get_attachment_name(attachment_point) == std::string());
+        draw_buffers[name] = attachment_point;
+        textures[attachment_point] = texture;
+
+        update_draw_buffers();
+    }
+
+    void create_renderbuffer(const int& width,
+                             const int& height) {
+        GLuint depthrenderbuffer;
+        glGenRenderbuffers(1, &depthrenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER,
+                              GL_DEPTH_COMPONENT,
+                              width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                  GL_DEPTH_ATTACHMENT,
+                                  GL_RENDERBUFFER,
+                                  depthrenderbuffer);
+        assert(get_attachment_name(GL_DEPTH_ATTACHMENT) == std::string());
+        draw_buffers["renderbuffer"] = GL_DEPTH_ATTACHMENT;
+        update_draw_buffers();
+    }
+
+    Texture get_texture(const GLenum& attachment) {
+        if (textures.count(attachment) == 1) {
+            return textures[attachment];
+        } else {
+            throw std::runtime_error(
+                "Framebuffer does not have attachment");
+        }
+    }
+
+    Texture get_texture(const std::string& name) {
+        if (draw_buffers.count(name) == 1) {
+            return get_texture(draw_buffers[name]);
+        } else {
+            throw std::runtime_error(
+                "Framebuffer does not have texture " + name);
+        }
+    }
+
+    void bind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, id);
+        glViewport(0, 0, width, height);
+    }
+
+    void unbind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void validate() {
+        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) !=
+               GL_FRAMEBUFFER_COMPLETE);
+    }
+
+    void typical_fbo(const GLenum& format = GL_RGBA,
+                     const GLenum& internal_format = GL_RGBA32F,
+                     const GLenum& type = GL_FLOAT) {
+        std::unordered_map<std::string, Texture> attachments;
+        Texture color_texture(GL_TEXTURE_2D,
+                              width,
+                              height);
+        Texture depth_texture(GL_TEXTURE_2D,
+                              width,
+                              height);
+
+        auto tex_params =
+        TextureParameterSet({
+            WRAP_ST_CLAMP_TO_BORDER, FILTER_MIN_MAG_NEAREST
+        });
+        color_texture.init(tex_params,
+                           0,
+                           internal_format,
+                           format,
+                           type,
+                           NULL,
+                           false);
+        depth_texture.init(tex_params,
+                           0,
+                           GL_DEPTH_COMPONENT32,
+                           GL_DEPTH_COMPONENT,
+                           GL_FLOAT,
+                           NULL,
+                           false);
+        attachments["color"] = color_texture;
+        attachments["depth"] = depth_texture;
+        bind_textures(attachments);
+    }
+
+    GLuint id;
+    std::unordered_map<GLenum, Texture> textures;
+    std::unordered_map<std::string, GLenum> draw_buffers;
+    int width;
+    int height;
+
+  private:
+    std::string get_attachment_name(const GLenum& attachment) {
+        for (auto it = draw_buffers.begin(); it != draw_buffers.end(); it++) {
+            if (it->second == attachment)
+                return it->first;
+        }
+        return std::string();
+    }
+
+    void update_draw_buffers() {
+        std::vector<GLenum> tmp;
+        for (auto it = draw_buffers.begin(); it != draw_buffers.end(); it++)
+            tmp.push_back(it->second);
+        glDrawBuffers(tmp.size(), &tmp[0]);
+    }
+
+
+    GLenum get_color_attachment_point(const int& index) {
+        switch (index) {
+            case 0:
+                return GL_COLOR_ATTACHMENT0;
+            case 1:
+                return GL_COLOR_ATTACHMENT1;
+            case 2:
+                return GL_COLOR_ATTACHMENT2;
+            case 3:
+                return GL_COLOR_ATTACHMENT3;
+            case 4:
+                return GL_COLOR_ATTACHMENT4;
+            case 5:
+                return GL_COLOR_ATTACHMENT5;
+            case 6:
+                return GL_COLOR_ATTACHMENT6;
+            case 7:
+                return GL_COLOR_ATTACHMENT7;
+            case 8:
+                return GL_COLOR_ATTACHMENT8;
+            case 9:
+                return GL_COLOR_ATTACHMENT9;
+            case 10:
+                return GL_COLOR_ATTACHMENT10;
+            case 11:
+                return GL_COLOR_ATTACHMENT11;
+            case 12:
+                return GL_COLOR_ATTACHMENT12;
+            case 13:
+                return GL_COLOR_ATTACHMENT13;
+            case 14:
+                return GL_COLOR_ATTACHMENT14;
+            case 15:
+                return GL_COLOR_ATTACHMENT15;
+            default:
+                throw std::runtime_error("Invalid color attachment!");
+        }
+    }
 };

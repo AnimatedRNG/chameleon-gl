@@ -22,9 +22,11 @@
 
 #include "SDL.h"
 
+#include "sdl_helpers.hpp"
+
 class EventHandler {
   public:
     virtual void on_event(SDL_Event& event,
-                          SDL::window_params* wp) = 0;
+                          SDL::WindowParams* wp) = 0;
     virtual void update() = 0;
 };

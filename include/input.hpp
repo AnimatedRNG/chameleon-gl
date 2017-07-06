@@ -82,7 +82,7 @@ class InputController : public EventHandler {
         this->aspect_ratio = ratio;
     }
 
-    void on_event(SDL_Event& event, SDL::window_params* wp) {
+    void on_event(SDL_Event& event, SDL::WindowParams* wp) {
         this->wp = wp;
         switch (event.type) {
             case SDL_KEYDOWN:
@@ -178,13 +178,13 @@ class InputController : public EventHandler {
     float initial_fov = 20.0f;
     float aspect_ratio = 16 / 9.;
 
+    SDL::WindowParams* wp;
+
   private:
     std::set<SDL_Keycode> keypress_map;
     glm::ivec2 current_mouse_position;
     glm::ivec2 center;
     bool dont_update;
-
-    SDL::window_params* wp;
 
     glm::mat4 model;
     glm::mat4 view;
