@@ -271,10 +271,11 @@ class ShaderFunction : public ShaderExpression {
         _source(source),
         _spec(),
         _called(false) {
+        std::string cleaned = remove_comments(source);
         std::regex main_regex(names + "\\s+(" + func_name +
                               ")\\s*\\(([^\\)]*)\\)\\s*\\{([^]*)\\}\\s*$");
         std::smatch main_matches;
-        std::regex_search(source, main_matches, main_regex);
+        std::regex_search(cleaned, main_matches, main_regex);
         assert(main_matches.size() == 5);
         _spec.return_type = main_matches[1];
         _spec.name = main_matches[2];
@@ -354,6 +355,11 @@ class ShaderFunction : public ShaderExpression {
         accum = accum.substr(0, accum.length() - 1);
         accum += ")";
         return accum;
+    }
+
+    std::string remove_comments(
+        const std::string& source) {
+        return std::regex_replace(source, std::regex(match_comments), "");
     }
 
     template <typename A, typename B>
@@ -454,6 +460,9 @@ class ShaderFunction : public ShaderExpression {
     const std::string match_all = "*";
     const std::string match_one_or_more = "+";
     const std::string whitespace = "\\s";
+    const std::string match_comments =
+        "(\\/\\*[\\w\\'\\s\\r\\n\\*]*\\*\\/)"
+        "|(\\/\\/[\\w\\s\\']*)|(\\<![\\-\\-\\s\\w\\>\\/]*\\>)";
 };
 
 inline std::ostream& operator<< (std::ostream& out,
