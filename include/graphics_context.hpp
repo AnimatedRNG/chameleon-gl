@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <thread>
+#include <unordered_map>
 
 // OpenGL / glew Headers
 #define GL3_PROTOTYPES 1
@@ -37,13 +38,18 @@
 
 class GraphicsContext {
   public:
-    GraphicsContext(EventHandler& ev_handler) :
+    GraphicsContext(EventHandler& ev_handler,
+                    std::unordered_map<std::string, void*> options =
+                        std::unordered_map<std::string, void*>()) :
         handler(ev_handler) {
         SDL_Init(SDL_INIT_EVERYTHING);
         IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+
         this->wp.window =
             SDL_CreateWindow("SDF Renderer", SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT,
+                             SDL_WINDOWPOS_UNDEFINED,
+                             default_value("width", WIDTH, options),
+                             default_value("height", HEIGHT, options),
                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
         this->wp.width = WIDTH;
         this->wp.height = HEIGHT;
@@ -128,6 +134,17 @@ class GraphicsContext {
         DEBUG("Frame time: " << diff);
 
         return diff;
+    }
+
+    template <typename T>
+    T default_value(std::string name,
+                    T default_value,
+                    std::unordered_map<std::string, void*> options) {
+        if (options.count(name) == 1) {
+            return *((T*) (options[name]));
+        } else {
+            return default_value;
+        }
     }
 
     SDL_Texture* render_texture;
