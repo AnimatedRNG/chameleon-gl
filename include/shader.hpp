@@ -302,7 +302,7 @@ class ShaderFunction : public ShaderExpression {
         }
         _spec.parameters = params;
         _body = main_matches[4];
-        get_errors();
+        assert(get_errors());
     }
 
     ShaderFunction operator()(
