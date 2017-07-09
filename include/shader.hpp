@@ -272,7 +272,7 @@ class ShaderFunction : public ShaderExpression {
         _spec(),
         _called(false) {
         std::regex main_regex(names + "\\s+(" + func_name +
-                       ")\\s*\\(([^\\)]*)\\)\\s*\\{([^]*)\\}\\s*$");
+                              ")\\s*\\(([^\\)]*)\\)\\s*\\{([^]*)\\}\\s*$");
         std::smatch main_matches;
         std::regex_search(source, main_matches, main_regex);
         assert(main_matches.size() == 5);
@@ -391,8 +391,8 @@ class ShaderFunction : public ShaderExpression {
 
         std::string defines;
         std::string new_shader = version_string + "\n\n" +
-            defines + "\n#line 0\n" + get_definition() +
-            "\n\nvoid main() {}";
+                                 defines + "\n#line 0\n" + get_definition() +
+                                 "\n\nvoid main() {}";
 
         Program program;
         return program.compile_shader(new_shader, ideal_stage, false);

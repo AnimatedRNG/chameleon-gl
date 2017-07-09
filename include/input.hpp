@@ -27,7 +27,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include "SDL.h"
+#include "SDL2/SDL.h"
 
 #include "util.hpp"
 #include "sdl_helpers.hpp"
