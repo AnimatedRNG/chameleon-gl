@@ -24,6 +24,8 @@
 #include <chrono>
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <streambuf>
 
 const std::string red("\033[1m\033[31m");
 const std::string reset_code("\033[0m");
@@ -46,4 +48,11 @@ inline std::string TOS(const T& s) {
     std::stringstream a;
     a << s;
     return a.str();
+}
+
+std::string read_file(const std::string& filename) {
+    std::ifstream t(filename);
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    return str;
 }
