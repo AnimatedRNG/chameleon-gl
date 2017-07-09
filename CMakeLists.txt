@@ -40,9 +40,17 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
+set(LIBS glm glew::glew SDL2::SDL2-static
+         ${SDL2_IMAGE_LIBRARY})
+
 add_executable(${PROJECT_NAME} 
 	src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME} 
-	glm glew::glew SDL2::SDL2-static Catch::Catch
-        ${SDL2_IMAGE_LIBRARY})
+	${LIBS})
+
+set(TEST_SOURCES "${PROJECT_SOURCE_DIR}/test/main.cpp"
+                 "${PROJECT_SOURCE_DIR}/test/test_shader.cpp")
+add_executable(tests ${TEST_SOURCES})
+
+target_link_libraries(tests Catch::Catch ${LIBS})
