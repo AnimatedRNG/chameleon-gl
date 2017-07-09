@@ -47,8 +47,40 @@ typedef struct {
     GLvoid* offset;
 } VertexAttribute;
 
+inline std::ostream& operator<< (std::ostream& out, const glm::bvec2& bvec) {
+    out << "bvec2("
+        << bvec.x << ", " << bvec.y
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::bvec3& bvec) {
+    out << "bvec3("
+        << bvec.x << ", " << bvec.y << ", " << bvec.z
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::bvec4& bvec) {
+    out << "bvec4("
+        << bvec.x << ", " << bvec.y << ", " << bvec.z << ", " << bvec.w
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
+    out << "vec2("
+        << vec.x << ", " << vec.y
+        << ")";
+
+    return out;
+}
+
 inline std::ostream& operator<< (std::ostream& out, const glm::vec3& vec) {
-    out << "("
+    out << "vec3("
         << vec.x << ", " << vec.y << ", " << vec.z
         << ")";
 
@@ -56,8 +88,120 @@ inline std::ostream& operator<< (std::ostream& out, const glm::vec3& vec) {
 }
 
 inline std::ostream& operator<< (std::ostream& out, const glm::vec4& vec) {
-    out << "("
+    out << "vec4("
         << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::ivec2& ivec) {
+    out << "ivec2("
+        << ivec.x << ", " << ivec.y
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::ivec3& ivec) {
+    out << "ivec3("
+        << ivec.x << ", " << ivec.y << ", " << ivec.z
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::ivec4& ivec) {
+    out << "ivec4("
+        << ivec.x << ", " << ivec.y << ", " << ivec.z << ", " << ivec.w
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::uvec2& uvec) {
+    out << "uvec2("
+        << uvec.x << ", " << uvec.y
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::uvec3& uvec) {
+    out << "uvec3("
+        << uvec.x << ", " << uvec.y << ", " << uvec.z
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::uvec4& uvec) {
+    out << "uvec4("
+        << uvec.x << ", " << uvec.y << ", " << uvec.z << ", " << uvec.w
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::dvec2& dvec) {
+    out << "dvec2("
+        << dvec.x << ", " << dvec.y
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::dvec3& dvec) {
+    out << "dvec3("
+        << dvec.x << ", " << dvec.y << ", " << dvec.z
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::dvec4& dvec) {
+    out << "dvec4("
+        << dvec.x << ", " << dvec.y << ", " << dvec.z << ", " << dvec.w
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::mat2& mat2) {
+    out << "mat2(\n"
+        << "vec2(" << mat2[0][0] << ", " << mat2[0][1] << "),"
+        << "\n "
+        << "vec2(" << mat2[1][0] << ", " << mat2[1][1] << ")"
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::mat3& mat3) {
+    out << "mat3(\n"
+        << "vec3(" << mat3[0][0] << ", " << mat3[0][1] << ", " << mat3[0][2] << "),"
+        << "\n "
+        << "vec3(" << mat3[1][0] << ", " << mat3[1][1] << ", " << mat3[1][2] << "),"
+        << "\n "
+        << "vec3(" << mat3[2][0] << ", " << mat3[2][1] << ", " << mat3[2][2] << ")"
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const glm::mat4& mat4) {
+    out << "mat4(\n"
+        << "vec4(" << mat4[0][0] << ", " << mat4[0][1] << ", " << mat4[0][2] << ", " <<
+        mat4[0][3] << "),"
+        << "\n "
+        << "vec4(" << mat4[1][0] << ", " << mat4[1][1] << ", " << mat4[1][2] << ", " <<
+        mat4[1][3] << "),"
+        << "\n "
+        << "vec4(" << mat4[2][0] << ", " << mat4[2][1] << ", " << mat4[2][2] << ", " <<
+        mat4[2][3] << "),"
+        << "\n "
+        << "vec4(" << mat4[3][0] << ", " << mat4[3][1] << ", " << mat4[3][2] << ", " <<
+        mat4[3][3] << ")"
         << ")";
 
     return out;
@@ -73,28 +217,6 @@ inline std::ostream& operator<< (std::ostream& out, const VertexAttribute& va) {
         << ", offset: "
         << va.offset
         << ")";
-
-    return out;
-}
-
-inline std::ostream& operator<< (std::ostream& out, const glm::vec2& vec) {
-    out << "("
-        << vec.x << ", " << vec.y
-        << ")";
-
-    return out;
-}
-
-inline std::ostream& operator<< (std::ostream& out, const glm::mat4& mat4) {
-    out << "["
-        << mat4[0][0] << ", " << mat4[0][1] << ", " << mat4[0][2] << ", " << mat4[0][3]
-        << "\n "
-        << mat4[1][0] << ", " << mat4[1][1] << ", " << mat4[1][2] << ", " << mat4[1][3]
-        << "\n "
-        << mat4[2][0] << ", " << mat4[2][1] << ", " << mat4[2][2] << ", " << mat4[2][3]
-        << "\n "
-        << mat4[3][0] << ", " << mat4[3][1] << ", " << mat4[3][2] << ", " << mat4[3][3]
-        << "]";
 
     return out;
 }
@@ -362,15 +484,22 @@ class Program {
         id = glCreateProgram();
     }
 
-    bool compile_shader(const std::string& filename,
-                        GLenum shader_type) {
+    bool compile_shader(const std::string& filename_or_str,
+                        GLenum shader_type,
+                        const bool& is_filename = true) {
         GLuint shader = glCreateShader(shader_type);
 
-        std::ifstream t(filename);
-        std::string source_str((std::istreambuf_iterator<char>(t)),
-                               std::istreambuf_iterator<char>());
+        const GLchar* source;
 
-        const GLchar* source = (const GLchar*) source_str.c_str();
+        if (is_filename) {
+            std::ifstream t(filename_or_str);
+            std::string source_str((std::istreambuf_iterator<char>(t)),
+                                   std::istreambuf_iterator<char>());
+            source = (const GLchar*) source_str.c_str();
+        } else {
+            source = filename_or_str.c_str();
+        }
+
         glShaderSource(shader, 1, &source, 0);
 
         glCompileShader(shader);
@@ -386,7 +515,12 @@ class Program {
 
             glDeleteShader(shader);
 
-            ERROR("Failed to compile shader " << filename << "! Info log:\n\n");
+            if (is_filename) {
+                ERROR("Failed to compile shader " << filename_or_str
+                      << "! Info log:\n\n");
+            } else {
+                ERROR("Failed to compile shader! Info log:\n\n");
+            }
             for (auto& a : info_log)
                 std::cout << a;
 

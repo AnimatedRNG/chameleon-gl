@@ -22,6 +22,8 @@
 
 #include <iostream>
 #include <chrono>
+#include <string>
+#include <sstream>
 
 const std::string red("\033[1m\033[31m");
 const std::string reset_code("\033[0m");
@@ -31,3 +33,17 @@ const std::string reset_code("\033[0m");
 #define DIFF(a, b)       (a - b).count()
 #define DEBUG(a)         std::cout << a << "\n"
 #define ERROR(a)         std::cerr << red << a << reset_code << "\n"
+
+/**
+ * Returns the string representation of an object,
+ * assuming that it has defined the stream operator
+ *
+ * @param s object to get string representation of
+ * @return string representation of {@code s}
+ */
+template<class T>
+inline std::string TOS(const T& s) {
+    std::stringstream a;
+    a << s;
+    return a.str();
+}
