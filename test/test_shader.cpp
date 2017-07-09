@@ -34,7 +34,7 @@ TEST_CASE("shader function creation works", "[shader]") {
     InputController input;
     std::pair<int, int> viewport(100, 100);
     std::unordered_map<std::string, void*> options;
-    std::string version = "2.0";
+    std::string version = "4.3";
     options["width"] = &(viewport.first);
     options["height"] = &(viewport.second);
     options["opengl_version"] = &version;
@@ -42,6 +42,21 @@ TEST_CASE("shader function creation works", "[shader]") {
 
     std::string simple_example =
         read_file("test/test_shaders/shader_function_simple.glsl");
-    DEBUG(simple_example);
-    ShaderFunction func("test", simple_example);
+    std::string simple_example_with_comments =
+        read_file("test/test_shaders/shader_function_comments.glsl");
+
+    SECTION("creating functions") {
+        ShaderFunction simple_example_func("test", simple_example);
+        simple_example_func(SO(3.0F), SO(2.0F));
+        assert(simple_example_func.get_function_call() ==
+               "test(float(3), float(2))");
+    }
+
+    SECTION("creating functions with comments") {
+        ShaderFunction simple_example_with_comments_func("test",
+                simple_example_with_comments);
+        simple_example_with_comments_func(SO(3.0F), SO(2.0F));
+        assert(simple_example_with_comments_func.get_function_call() ==
+               "test(float(3), float(2))");
+    }
 }
