@@ -23,6 +23,7 @@
 #include <iostream>
 #include <thread>
 #include <unordered_map>
+#include <assert.h>
 
 // OpenGL / glew Headers
 #define GL3_PROTOTYPES 1
@@ -39,22 +40,22 @@
 class GraphicsContext {
   public:
     GraphicsContext(EventHandler& ev_handler,
-                    std::unordered_map<std::string, void*> options =
-                        std::unordered_map<std::string, void*>()) :
+                    const std::unordered_map<std::string, void*>& options) :
         handler(ev_handler) {
         SDL_Init(SDL_INIT_EVERYTHING);
         IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 
+        this->wp.width = default_value("width", WIDTH, options);
+        this->wp.height = default_value("height", HEIGHT, options);
         this->wp.window =
             SDL_CreateWindow("SDF Renderer", SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED,
-                             default_value("width", WIDTH, options),
-                             default_value("height", HEIGHT, options),
+                             this->wp.width,
+                             this->wp.height,
                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-        this->wp.width = WIDTH;
-        this->wp.height = HEIGHT;
 
-        set_gl_attributes();
+
+        set_gl_attributes(default_value("opengl_version", "4.3", options));
         this->wp.gl_context = SDL_GL_CreateContext(this->wp.window);
         if (this->wp.gl_context == NULL) {
             DEBUG("OpenGL context could not be created!");
@@ -83,6 +84,11 @@ class GraphicsContext {
         GLContext::gl_init();
     }
 
+    GraphicsContext(EventHandler& ev_handler) :
+        GraphicsContext(ev_handler,
+                        std::unordered_map<std::string, void*>()) {
+    }
+
     void start(Renderer& renderer) {
         for (long accum = 0; accum >= 0;) {
             long dt = mainloop(renderer);
@@ -101,12 +107,16 @@ class GraphicsContext {
         SDL_Quit();
     }
   private:
-    void set_gl_attributes() {
+    void set_gl_attributes(const std::string& version) {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                             SDL_GL_CONTEXT_PROFILE_CORE);
 
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        // TODO: Replace with something more elegant
+        assert(version.size() == 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+                            (int)(version[0] - '0'));
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+                            (int)(version[2] - '0'));
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     }
@@ -141,7 +151,7 @@ class GraphicsContext {
                     T default_value,
                     std::unordered_map<std::string, void*> options) {
         if (options.count(name) == 1) {
-            return *((T*) (options[name]));
+            return *((T*)(options[name]));
         } else {
             return default_value;
         }

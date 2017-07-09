@@ -18,6 +18,8 @@
 // along with ChameleonGL.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <unordered_map>
+
 #include "catch.hpp"
 
 #include "input.hpp"
@@ -30,7 +32,13 @@ STATIC_INIT()
 
 TEST_CASE("shader function creation works", "[shader]") {
     InputController input;
-    GraphicsContext context(input);
+    std::pair<int, int> viewport(100, 100);
+    std::unordered_map<std::string, void*> options;
+    std::string version = "2.0";
+    options["width"] = &(viewport.first);
+    options["height"] = &(viewport.second);
+    options["opengl_version"] = &version;
+    GraphicsContext context(input, options);
 
     std::string simple_example =
         read_file("test/test_shaders/shader_function_simple.glsl");
