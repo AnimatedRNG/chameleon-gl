@@ -38,6 +38,7 @@
 #include "sdl_helpers.hpp"
 #include "renderer.hpp"
 #include "graphics_context.hpp"
+#include "draw_command.hpp"
 
 class SDFRenderer : public Renderer {
   public:
@@ -76,7 +77,9 @@ class SDFRenderer : public Renderer {
         program.set_uniform("NEAR", InputController::NEAR_PLANE);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        mesh.draw();
+
+        DrawCommand sdf_draw(mesh, program);
+        DrawCommand::exec(sdf_draw);
     }
 
   private:

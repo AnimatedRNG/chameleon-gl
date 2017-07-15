@@ -32,9 +32,10 @@
 
 #include "util.hpp"
 #include "opengl_utils.hpp"
+#include "drawable.hpp"
 
 // Unoptimized mesh implementation
-class Mesh {
+class Mesh : public Drawable {
   public:
     Mesh() {
         glGenVertexArrays(1, &vao);
@@ -134,10 +135,17 @@ class Mesh {
         return Mesh(vbo);
     }
 
-    void draw() {
-        glBindVertexArray(vao);
-        this->vbo.draw();
-    }
+    virtual void on_draw() override {
+
+    };
+
+    virtual VBO get_vbo() override {
+        return vbo;
+    };
+
+    virtual GLint get_vao() override {
+        return vao;
+    };
 
   private:
     GLuint vao;

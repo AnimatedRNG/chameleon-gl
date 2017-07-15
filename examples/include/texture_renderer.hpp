@@ -35,6 +35,7 @@
 #include "input.hpp"
 #include "mesh.hpp"
 #include "graphics_context.hpp"
+#include "draw_command.hpp"
 
 class TextureRenderer : public Renderer {
   public:
@@ -66,7 +67,8 @@ class TextureRenderer : public Renderer {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        quad.draw();
+        DrawCommand tex_draw(quad, program);
+        DrawCommand::exec(tex_draw);
     }
 
   private:

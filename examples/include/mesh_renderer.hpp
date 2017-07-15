@@ -35,6 +35,7 @@
 #include "renderer.hpp"
 #include "graphics_context.hpp"
 #include "mesh.hpp"
+#include "draw_command.hpp"
 
 class MeshRenderer : public Renderer {
   public:
@@ -64,8 +65,9 @@ class MeshRenderer : public Renderer {
         program.set_uniform("projection", projection_matrix);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        program.bind();
-        mesh.draw();
+
+        DrawCommand mesh_draw(mesh, program);
+        DrawCommand::exec(mesh_draw);
     }
   private:
     Program program;
