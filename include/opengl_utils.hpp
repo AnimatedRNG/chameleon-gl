@@ -486,15 +486,17 @@ class Program {
 
     std::string compile_shader(const std::string& filename_or_str,
                                GLenum shader_type,
-                               const bool& is_filename = true) {
+                               const bool& is_filename = true,
+                               const bool& error_log = false) {
         GLuint shader = glCreateShader(shader_type);
 
         const GLchar* source;
+        std::string source_str;
 
         if (is_filename) {
             std::ifstream t(filename_or_str);
-            std::string source_str((std::istreambuf_iterator<char>(t)),
-                                   std::istreambuf_iterator<char>());
+            source_str = std::string((std::istreambuf_iterator<char>(t)),
+                                     std::istreambuf_iterator<char>());
             source = (const GLchar*) source_str.c_str();
         } else {
             source = filename_or_str.c_str();
@@ -524,6 +526,10 @@ class Program {
             }
             for (auto& a : info_log)
                 log += a;
+
+            if (error_log) {
+                ERROR(log);
+            }
 
             return log;
         }

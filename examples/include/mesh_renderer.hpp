@@ -42,8 +42,10 @@ class MeshRenderer : public Renderer {
         program(),
         ctrl(controller),
         mesh(mesh) {
-        program.compile_shader("shaders/simple_shader.vs", GL_VERTEX_SHADER);
-        program.compile_shader("shaders/simple_shader.fs", GL_FRAGMENT_SHADER);
+        program.compile_shader("shaders/simple_shader.vs", GL_VERTEX_SHADER,
+                               true, true);
+        program.compile_shader("shaders/simple_shader.fs", GL_FRAGMENT_SHADER,
+                               true, true);
         program.link_program();
 
         glEnable(GL_DEPTH_TEST);

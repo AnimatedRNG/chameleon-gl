@@ -43,11 +43,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(LIBS glm glew::glew SDL2::SDL2-static
          ${SDL2_IMAGE_LIBRARY})
 
-add_executable(${PROJECT_NAME} 
-	src/main.cpp)
-
-target_link_libraries(${PROJECT_NAME} 
-	${LIBS})
+include_directories("${PROJECT_SOURCE_DIR}/examples/include")
+file(GLOB files "examples/src/*.cpp")
+foreach(file ${files})
+             string(REGEX MATCH "^(.*)\\.[^.]*$" dummy ${file})
+             set(no_ext ${CMAKE_MATCH_1})
+             get_filename_component(basename ${no_ext} NAME)
+             add_executable(${basename} ${file})
+             target_link_libraries(${basename} ${LIBS})
+endforeach()
 
 set(TEST_SOURCES "${PROJECT_SOURCE_DIR}/test/main.cpp"
                  "${PROJECT_SOURCE_DIR}/test/test_shader.cpp")

@@ -41,8 +41,10 @@ class TextureRenderer : public Renderer {
     explicit TextureRenderer(InputController& controller, Texture& tex) :
         quad(),
         texture(tex) {
-        program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER);
-        program.compile_shader("shaders/texture_shader.fs", GL_FRAGMENT_SHADER);
+        program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER,
+                               true, true);
+        program.compile_shader("shaders/texture_shader.fs", GL_FRAGMENT_SHADER,
+                               true, true);
         program.link_program();
 
         quad = Mesh::construct_fullscreen_quad();

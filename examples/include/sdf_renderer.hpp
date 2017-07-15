@@ -45,8 +45,10 @@ class SDFRenderer : public Renderer {
         program(),
         mesh(),
         ctrl(controller) {
-        program.compile_shader("shaders/sdf_shader.vs", GL_VERTEX_SHADER);
-        program.compile_shader("shaders/sdf_shader.fs", GL_FRAGMENT_SHADER);
+        program.compile_shader("shaders/sdf_shader.vs", GL_VERTEX_SHADER,
+                               true, true);
+        program.compile_shader("shaders/sdf_shader.fs", GL_FRAGMENT_SHADER,
+                               true, true);
         program.link_program();
 
         mesh = Mesh::construct_fullscreen_quad();
