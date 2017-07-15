@@ -253,6 +253,9 @@ class VBO {
         this->_vertex_buffer = new GLuint[other._vertex_attributes.size()];
         this->_primitive_type = other._primitive_type;
         this->_vertex_attributes = other._vertex_attributes;
+        memcpy(this->_vertex_buffer,
+               other._vertex_buffer,
+               sizeof(GLuint) * other._vertex_attributes.size());
     }
 
     ~VBO() {
