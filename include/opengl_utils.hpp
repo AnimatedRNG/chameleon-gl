@@ -484,9 +484,9 @@ class Program {
         id = glCreateProgram();
     }
 
-    bool compile_shader(const std::string& filename_or_str,
-                        GLenum shader_type,
-                        const bool& is_filename = true) {
+    std::string compile_shader(const std::string& filename_or_str,
+                               GLenum shader_type,
+                               const bool& is_filename = true) {
         GLuint shader = glCreateShader(shader_type);
 
         const GLchar* source;
@@ -506,6 +506,7 @@ class Program {
 
         GLint isCompiled = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+        std::string log;
         if (isCompiled == GL_FALSE) {
             GLint maxLength = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
@@ -516,22 +517,22 @@ class Program {
             glDeleteShader(shader);
 
             if (is_filename) {
-                ERROR("Failed to compile shader " << filename_or_str
-                      << "! Info log:\n\n");
+                log = "Failed to compile shader " + filename_or_str
+                      + "! Info log:\n\n";
             } else {
-                ERROR("Failed to compile shader! Info log:\n\n");
+                log = "Failed to compile shader! Info log:\n\n";
             }
             for (auto& a : info_log)
-                std::cout << a;
+                log += a;
 
-            return false;
+            return log;
         }
 
         this->shader_ids.push_back(shader);
 
         glAttachShader(id, shader);
 
-        return true;
+        return log;
     }
 
     bool link_program() {
