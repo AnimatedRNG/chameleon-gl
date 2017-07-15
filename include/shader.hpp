@@ -265,12 +265,15 @@ class ShaderObject : public ShaderExpression {
 
 class ShaderFunction : public ShaderExpression {
   public:
+    // Note that these dependencies are given in sorted order
     explicit ShaderFunction(const std::string func_name,
-                            const std::string source) :
+                            const std::string source,
+                            const std::vector<std::shared_ptr<ShaderFunction>> dependencies) :
         _params(ExpressionListPtr(new ExpressionList)),
         _source(source),
         _spec(),
-        _called(false) {
+        _called(false),
+        _dependencies(dependencies) {
         std::string cleaned = remove_comments(source);
         std::regex main_regex(names + "\\s+(" + func_name +
                               ")\\s*\\(([^\\)]*)\\)\\s*\\{([^]*)\\}\\s*$");
@@ -303,7 +306,19 @@ class ShaderFunction : public ShaderExpression {
         }
         _spec.parameters = params;
         _body = main_matches[4];
-        assert(get_errors());
+        std::string error_log = get_errors();
+        if (error_log != std::string()) {
+            throw std::runtime_error("Error in function " + func_name +
+                                     "! Reference: \n\n--------------\n" +
+                                     source + "\n--------------\n\n" +
+                                     error_log);
+        }
+    }
+
+    explicit ShaderFunction(const std::string func_name,
+                            const std::string source) :
+        ShaderFunction(func_name, source,
+                       std::vector<std::shared_ptr<ShaderFunction>>()) {
     }
 
     ShaderFunction operator()(
@@ -370,7 +385,7 @@ class ShaderFunction : public ShaderExpression {
         return vA;
     }
 
-    bool get_errors() {
+    std::string get_errors() {
         std::regex version_regex("#version[^\n\r]+");
 
         std::regex stage_regex("#define\\s+" + stages);
@@ -409,6 +424,7 @@ class ShaderFunction : public ShaderExpression {
     ShaderFunctionSpec _spec;
     std::string _body;
     bool _called;
+    const std::vector<std::shared_ptr<ShaderFunction>> _dependencies;
 
     const std::unordered_map<std::string, GLenum> stages_map = {
         {"VERTEX_SHADER_ONLY", GL_VERTEX_SHADER},
