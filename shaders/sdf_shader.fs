@@ -21,11 +21,11 @@
 #version 430 core
 out vec3 color;
 
-uniform vec3 origin;
-uniform mat4 inv;
-uniform vec4 viewport;
+uniform vec3 chml_origin;
+uniform mat4 chml_inverse_view_projection;
+uniform vec4 chml_viewport;
 
-uniform float NEAR;
+uniform float chml_near;
 //uniform float FAR;
 
 float sdfSphere(in vec3 pos, in float radius) {
@@ -52,26 +52,26 @@ vec3 opCheapBend(vec3 p) {
 void main() {
     float i = gl_FragCoord.x;
     float j = gl_FragCoord.y;
-    vec4 world_space_vec = vec4((i - viewport[0]) / viewport[2],
-                                ((viewport[3] - j) - viewport[1]) / viewport[3],
+    vec4 world_space_vec = vec4((i - chml_viewport[0]) / chml_viewport[2],
+                                ((chml_viewport[3] - j) - chml_viewport[1]) / chml_viewport[3],
                                 1,
                                 1);
     world_space_vec = world_space_vec * 2.0 - 1.0;
 
-    vec4 tmp = inv * world_space_vec;
+    vec4 tmp = chml_inverse_view_projection * world_space_vec;
     tmp /= tmp.w;
-    tmp -= vec4(origin, 0);
+    tmp -= vec4(chml_origin, 0);
     vec3 ray_vec = vec3(tmp);
     ray_vec = normalize(ray_vec);
 
-    vec3 current_point = origin + ray_vec * NEAR;
+    vec3 current_point = chml_origin + ray_vec * chml_near;
     float radius = 0;
     for (int k = 0; k < 20; k++) {
         radius = sdTorus(current_point, vec2(3, 2));
         current_point += ray_vec * radius;
     }
 
-    float distance = length(current_point - origin);
+    float distance = length(current_point - chml_origin);
 
     if (radius < 0.1)
         color = vec3(dot(normalize(current_point), normalize(vec3(0, -5, 0))));

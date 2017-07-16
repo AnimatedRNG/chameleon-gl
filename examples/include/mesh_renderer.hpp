@@ -57,13 +57,6 @@ class MeshRenderer : public Renderer {
 
     virtual void operator()(const int& width,
                             const int& height) override {
-        glm::mat4 projection_matrix = ctrl.get_projection();
-        glm::mat4 view_matrix = ctrl.get_view();
-
-        program.set_uniform("model", glm::mat4());
-        program.set_uniform("view", view_matrix);
-        program.set_uniform("projection", projection_matrix);
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         DrawCommand mesh_draw(mesh, program);

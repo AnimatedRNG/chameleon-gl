@@ -18,6 +18,7 @@
 // along with ChameleonGL.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "chameleon_gl.hpp"
 #include "input.hpp"
 #include "graphics_context.hpp"
 #include "mesh_renderer.hpp"

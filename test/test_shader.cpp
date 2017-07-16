@@ -22,6 +22,7 @@
 
 #include "catch.hpp"
 
+#include "chameleon_gl.hpp"
 #include "input.hpp"
 #include "graphics_context.hpp"
 #include "gl_context.hpp"

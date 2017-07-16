@@ -18,8 +18,16 @@
 // along with ChameleonGL.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#pragma once
+
+#include <unordered_map>
+#include <functional>
+
 #include "drawable.hpp"
 #include "opengl_utils.hpp"
+
+#define DRAW_STATIC_INIT() \
+    std::vector<std::reference_wrapper<Program>> DrawCommand::_programs;
 
 class DrawCommand {
 public:
@@ -27,6 +35,11 @@ public:
                 Program& program) :
         _drawable(drawable),
         _program(program) {
+        for (Program& program : _programs) {
+            if (program == _program)
+                return;
+        }
+        _programs.push_back(std::ref(program));
     }
 
     void operator()() {
@@ -39,6 +52,15 @@ public:
         vbo.draw();
     }
 
+    template <typename T>
+    static void set_uniform(const std::string& name,
+                            T value) {
+        for (Program& program : _programs) {
+            program.bind();
+            program.set_uniform(name, value, false);
+        }
+    }
+
     static void exec(DrawCommand& drawCommand) {
         drawCommand();
     }
@@ -46,4 +68,5 @@ public:
 private:
     Drawable& _drawable;
     Program& _program;
+    static std::vector<std::reference_wrapper<Program>> _programs;
 };

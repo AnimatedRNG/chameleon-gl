@@ -18,16 +18,9 @@
 // along with ChameleonGL.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "chameleon_gl.hpp"
-#include "input.hpp"
-#include "graphics_context.hpp"
-#include "sdf_renderer.hpp"
+#include "draw_command.hpp"
+#include "gl_context.hpp"
 
-STATIC_INIT()
-
-int main(int argc, char** args) {
-    InputController input;
-    GraphicsContext context(input);
-    SDFRenderer renderer(input);
-    context.start(renderer);
-}
+#define STATIC_INIT() \
+    GL_STATIC_INIT() \
+    DRAW_STATIC_INIT()

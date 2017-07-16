@@ -62,20 +62,6 @@ class SDFRenderer : public Renderer {
 
     virtual void operator()(const int& width,
                             const int& height) override {
-        glm::mat4 projection_matrix = ctrl.get_projection();
-        glm::mat4 view_matrix = ctrl.get_view();
-
-        glm::vec4 viewport(0, 0, width, height);
-        glm::vec3 origin(glm::inverse(view_matrix) * glm::vec4(0, 0, 0, 1));
-        glm::mat4 inverse(glm::inverse(projection_matrix * view_matrix));
-
-        program.bind();
-        program.set_uniform("origin", origin);
-        program.set_uniform("inv", inverse);
-        program.set_uniform("viewport", viewport);
-
-        program.set_uniform("NEAR", InputController::NEAR_PLANE);
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         DrawCommand sdf_draw(mesh, program);

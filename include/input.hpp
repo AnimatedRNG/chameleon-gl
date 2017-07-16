@@ -33,6 +33,7 @@
 #include "sdl_helpers.hpp"
 #include "event_handler.hpp"
 #include "opengl_utils.hpp"
+#include "draw_command.hpp"
 
 class InputController : public EventHandler {
 
@@ -161,6 +162,17 @@ class InputController : public EventHandler {
         this->model = glm::mat4();
         this->projection = projection;
         this->view = view;
+
+        glm::vec3 origin(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
+        glm::mat4 inverse_view_projection(glm::inverse(projection * view));
+
+        DrawCommand::set_uniform("chml_model", model);
+        DrawCommand::set_uniform("chml_projection", projection);
+        DrawCommand::set_uniform("chml_view", view);
+        DrawCommand::set_uniform("chml_origin", origin);
+        DrawCommand::set_uniform("chml_inverse_view_projection",
+                                 inverse_view_projection);
+        DrawCommand::set_uniform("chml_near", NEAR_PLANE);
 
         current_mouse_position = center;
     };

@@ -35,6 +35,7 @@
 #include "event_handler.hpp"
 #include "sdl_helpers.hpp"
 #include "gl_context.hpp"
+#include "draw_command.hpp"
 #include "renderer.hpp"
 
 class GraphicsContext {
@@ -131,8 +132,9 @@ class GraphicsContext {
         }
 
         GLContext::gl_refresh();
-        SDL_Rect viewport = {0, 0, WIDTH, HEIGHT};
-        renderer(viewport.w, viewport.h);
+        float viewport[4] = {0, 0, WIDTH, HEIGHT};
+        DrawCommand::set_uniform("chml_viewport", viewport);
+        renderer(viewport[2], viewport[3]);
         SDL_GL_SwapWindow(this->wp.window);
 
         auto end = GET_TIME();

@@ -95,6 +95,14 @@ inline std::ostream& operator<< (std::ostream& out, const glm::vec4& vec) {
     return out;
 }
 
+inline std::ostream& operator<< (std::ostream& out, const float vec[4]) {
+    out << "vec4("
+        << vec[0] << ", " << vec[1] << ", " << vec[2] << ", " << vec[3]
+        << ")";
+
+    return out;
+}
+
 inline std::ostream& operator<< (std::ostream& out, const glm::ivec2& ivec) {
     out << "ivec2("
         << ivec.x << ", " << ivec.y
@@ -114,6 +122,14 @@ inline std::ostream& operator<< (std::ostream& out, const glm::ivec3& ivec) {
 inline std::ostream& operator<< (std::ostream& out, const glm::ivec4& ivec) {
     out << "ivec4("
         << ivec.x << ", " << ivec.y << ", " << ivec.z << ", " << ivec.w
+        << ")";
+
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const int ivec[4]) {
+    out << "ivec4("
+        << ivec[0] << ", " << ivec[1] << ", " << ivec[2] << ", " << ivec[3]
         << ")";
 
     return out;
@@ -487,6 +503,10 @@ class Program {
         id = glCreateProgram();
     }
 
+    bool operator==(const Program& other) const {
+        return (this->id == other.id);
+    }
+
     std::string compile_shader(const std::string& filename_or_str,
                                GLenum shader_type,
                                const bool& is_filename = true,
@@ -575,7 +595,8 @@ class Program {
 
     template <typename T>
     void set_uniform(const std::string& name,
-                     T value) {
+                     T value,
+                     const bool& validate = true) {
         GLint location;
         if (uniform_cache.count(name))
             location = uniform_cache[name];
@@ -583,7 +604,7 @@ class Program {
             location = glGetUniformLocation(id, name.c_str());
             uniform_cache[name] = location;
         }
-        if (location == -1) {
+        if (location == -1 && validate) {
             ERROR("Could not find uniform " << name << "!" <<
                   " Error: " << glGetError());
             exit(1);
@@ -597,6 +618,7 @@ class Program {
             glDeleteShader(shader);
     }
 
+    GLuint id;
   private:
     template <typename T>
     void _set_uniform(const GLint& location, T value) {
@@ -620,6 +642,10 @@ class Program {
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
+    void _set_uniform(const GLint& location, float value[4]) {
+        glUniform4f(location, value[0], value[1], value[2], value[3]);
+    }
+
     void _set_uniform(const GLint& location, GLint value) {
         glUniform1i(location, value);
     }
@@ -634,6 +660,10 @@ class Program {
 
     void _set_uniform(const GLint& location, glm::ivec4 value) {
         glUniform4i(location, value.x, value.y, value.z, value.w);
+    }
+
+    void _set_uniform(const GLint& location, int value[4]) {
+        glUniform4i(location, value[0], value[1], value[2], value[3]);
     }
 
     void _set_uniform(const GLint& location, glm::mat2 value) {
@@ -652,7 +682,6 @@ class Program {
         glUniform1i(location, value.texture_image_unit);
     }
 
-    GLuint id;
     std::vector<GLint> shader_ids;
     std::unordered_map<std::string, GLint> uniform_cache;
 };

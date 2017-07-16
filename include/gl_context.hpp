@@ -28,7 +28,7 @@
 
 #include "image_data.hpp"
 
-#define STATIC_INIT() \
+#define GL_STATIC_INIT() \
     std::unordered_set<int> GLContext::texture_image_units; \
     GLint GLContext::max_texture_image_units;               \
     ImagePool GLContext::image_pool; \
@@ -38,7 +38,7 @@
         -1.0f,  1.0f, 0.0f, \
         -1.0f,  1.0f, 0.0f, \
         1.0f, -1.0f, 0.0f, \
-        1.0f,  1.0f, 0.0f}; \
+        1.0f,  1.0f, 0.0f};
 
 class GLContext {
   public:
