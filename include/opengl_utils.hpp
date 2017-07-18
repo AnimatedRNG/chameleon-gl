@@ -263,7 +263,6 @@ public:
         }
     }
 
-    // Nasty side effects, avoid using
     void unbind() {
         if (GLContext::remove_bound_buffer(target)) {
             glBindBuffer(target, 0);
