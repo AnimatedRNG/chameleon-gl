@@ -241,7 +241,7 @@ inline std::ostream& operator<< (std::ostream& out, const VertexAttribute& va) {
 }
 
 class Buffer {
-public:
+  public:
     Buffer() :
         target(GL_ARRAY_BUFFER) {
         glGenBuffers(1, &id);
@@ -254,6 +254,27 @@ public:
 
     ~Buffer() {
         unbind();
+    }
+
+    void load(const GLenum& target,
+              void* data,
+              const size_t& num_bytes,
+              const GLenum& usage_type = GL_STATIC_COPY) {
+        bool not_bound = GLContext::is_buffer_bound(id);
+        bind(target);
+        glBufferData(target,
+                     num_bytes,
+                     data,
+                     usage_type);
+        if (not_bound) {
+            unbind();
+        }
+    }
+
+    void update(const GLenum& target,
+                void* data,
+                const size_t& num_bytes) {
+        load(target, data, num_bytes, GL_DYNAMIC_COPY);
     }
 
     void bind(const GLenum& target) {
@@ -269,7 +290,6 @@ public:
         }
     }
 
-private:
     GLuint id;
     GLenum target;
 };
@@ -535,12 +555,20 @@ class Texture {
 
 class Program {
   public:
-    Program() {
+    Program() :
+        ssbo_binding_map(),
+        last_ssbo_binding_point(0) {
         id = glCreateProgram();
     }
 
     bool operator==(const Program& other) const {
         return (this->id == other.id);
+    }
+
+    ~Program() {
+        glDeleteProgram(id);
+        for (auto& shader : shader_ids)
+            glDeleteShader(shader);
     }
 
     std::string compile_shader(const std::string& filename_or_str,
@@ -629,6 +657,31 @@ class Program {
         glUseProgram(this->id);
     }
 
+
+    void attach_ssbo(Buffer& buffer,
+                     const std::string& buffer_name) {
+        GLuint block_index = 0;
+        block_index = glGetProgramResourceIndex(id,
+                                                GL_SHADER_STORAGE_BLOCK,
+                                                buffer_name.c_str());
+
+        ssbo_binding_map[buffer.id] = last_ssbo_binding_point++;
+
+        // Cache stuff so that this gets more efficient
+        glShaderStorageBlockBinding(id,
+                                    block_index,
+                                    ssbo_binding_map[buffer.id]);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         ssbo_binding_map[buffer.id],
+                         buffer.id);
+    }
+
+    void remove_ssbo(Buffer& buffer) {
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         ssbo_binding_map[buffer.id],
+                         0);
+    }
+
     void dispatch_compute(const glm::uvec3& workgroup_count) {
         glDispatchCompute(workgroup_count.x,
                           workgroup_count.y,
@@ -652,12 +705,6 @@ class Program {
             exit(1);
         }
         _set_uniform(location, value);
-    }
-
-    ~Program() {
-        glDeleteProgram(id);
-        for (auto& shader : shader_ids)
-            glDeleteShader(shader);
     }
 
     GLuint id;
@@ -726,6 +773,8 @@ class Program {
 
     std::vector<GLint> shader_ids;
     std::unordered_map<std::string, GLint> uniform_cache;
+    std::unordered_map<GLuint, GLuint> ssbo_binding_map;
+    int last_ssbo_binding_point;
 };
 
 class Framebuffer {
