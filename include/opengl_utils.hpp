@@ -40,6 +40,9 @@
 #include "util.hpp"
 #include "gl_context.hpp"
 
+// TODO: Update EVERYTHING to use DSA
+// Seriously, OpenGL is not usable without DSA
+
 typedef struct {
     GLuint index;
     GLint vector_size;
@@ -237,6 +240,41 @@ inline std::ostream& operator<< (std::ostream& out, const VertexAttribute& va) {
     return out;
 }
 
+class Buffer {
+public:
+    Buffer() :
+        target(GL_ARRAY_BUFFER) {
+        glGenBuffers(1, &id);
+    }
+
+    Buffer(const Buffer& other) :
+        id(other.id),
+        target(other.target) {
+    }
+
+    ~Buffer() {
+        unbind();
+    }
+
+    void bind(const GLenum& target) {
+        this->target = target;
+        if (GLContext::add_bound_buffer(target)) {
+            glBindBuffer(target, id);
+        }
+    }
+
+    // Nasty side effects, avoid using
+    void unbind() {
+        if (GLContext::remove_bound_buffer(target)) {
+            glBindBuffer(target, 0);
+        }
+    }
+
+private:
+    GLuint id;
+    GLenum target;
+};
+
 class VBO {
   public:
     VBO() {
@@ -247,35 +285,34 @@ class VBO {
         const std::vector<VertexAttribute>& vertex_attributes,
         GLuint num_vertices,
         GLenum primitive_type) :
+        _vertex_buffer(),
         _vertex_attributes(vertex_attributes),
         _primitive_type(primitive_type),
         _num_vertices(num_vertices) {
-        this->_vertex_buffer = new GLuint[vertex_data.size()];
-        glGenBuffers(vertex_data.size(), _vertex_buffer);
         for (size_t i = 0; i < vertex_data.size(); i++) {
-            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer[i]);
+            Buffer vertex_buffer;
+            vertex_buffer.bind(GL_ARRAY_BUFFER);
+
             auto va = vertex_attributes[i];
             glBufferData(GL_ARRAY_BUFFER,
                          num_vertices * va.vector_size * sizeof(GLfloat),
                          &(vertex_data[i][0]),
                          GL_STATIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            vertex_buffer.unbind();
+            _vertex_buffer.push_back(vertex_buffer);
         }
         assert(_vertex_attributes.size() == vertex_data.size());
     }
 
     VBO(const VBO& other) {
         this->_num_vertices = other._num_vertices;
-        this->_vertex_buffer = new GLuint[other._vertex_attributes.size()];
+        this->_vertex_buffer = std::vector<Buffer>(other._vertex_buffer);
         this->_primitive_type = other._primitive_type;
         this->_vertex_attributes = other._vertex_attributes;
-        memcpy(this->_vertex_buffer,
-               other._vertex_buffer,
-               sizeof(GLuint) * other._vertex_attributes.size());
     }
 
     ~VBO() {
-        //delete this->_vertex_buffer;
+
     }
 
     bool draw() {
@@ -290,7 +327,7 @@ class VBO {
             }
 
             glEnableVertexAttribArray(va.index);
-            glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer[i]);
+            _vertex_buffer[i].bind(GL_ARRAY_BUFFER);
             glVertexAttribPointer(
                 i,
                 va.vector_size,
@@ -299,7 +336,7 @@ class VBO {
                 va.stride,
                 va.offset
             );
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            _vertex_buffer[i].unbind();
             indices.insert(va.index);
         }
 
@@ -314,7 +351,7 @@ class VBO {
         return true;
     }
   private:
-    GLuint* _vertex_buffer;
+    std::vector<Buffer> _vertex_buffer;
     std::vector<VertexAttribute> _vertex_attributes;
     GLenum _primitive_type;
     GLuint _num_vertices;
@@ -591,6 +628,12 @@ class Program {
 
     void bind() {
         glUseProgram(this->id);
+    }
+
+    void dispatch_compute(const glm::uvec3& workgroup_count) {
+        glDispatchCompute(workgroup_count.x,
+                          workgroup_count.y,
+                          workgroup_count.z);
     }
 
     template <typename T>

@@ -38,7 +38,8 @@
         -1.0f,  1.0f, 0.0f, \
         -1.0f,  1.0f, 0.0f, \
         1.0f, -1.0f, 0.0f, \
-        1.0f,  1.0f, 0.0f};
+        1.0f,  1.0f, 0.0f}; \
+    std::unordered_set<GLuint> GLContext::bound_buffers;
 
 class GLContext {
   public:
@@ -64,8 +65,30 @@ class GLContext {
         return image_pool.get(index);
     }
 
-    static void erase(const int& index) {
+    static void erase_image(const int& index) {
         image_pool.remove(index);
+    }
+
+    static bool add_bound_buffer(const GLuint& buffer) {
+        if (bound_buffers.count(buffer) != 0) {
+            return false;
+        } else {
+            bound_buffers.insert(buffer);
+            return true;
+        }
+    }
+
+    static bool is_buffer_bound(const GLuint& buffer) {
+        return bound_buffers.count(buffer) == 1;
+    }
+
+    static bool remove_bound_buffer(const GLuint& buffer) {
+        if (bound_buffers.count(buffer) == 0) {
+            return false;
+        } else {
+            bound_buffers.erase(buffer);
+            return true;
+        }
     }
 
     static void gl_init() {
@@ -80,6 +103,7 @@ class GLContext {
     static std::unordered_set<int> texture_image_units;
     static GLint max_texture_image_units;
     static ImagePool image_pool;
+    static std::unordered_set<GLuint> bound_buffers;
 
 
     const static GLfloat quad_vertex_buffer_data[18];
