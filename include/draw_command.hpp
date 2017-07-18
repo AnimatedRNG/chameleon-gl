@@ -21,6 +21,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <functional>
 
 #include "drawable.hpp"
 #include "opengl_utils.hpp"
