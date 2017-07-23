@@ -856,6 +856,7 @@ class Framebuffer {
                              attachment_point,
                              texture.id,
                              level);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         assert(get_attachment_name(attachment_point) == std::string());
         draw_buffers[name] = attachment_point;
@@ -876,6 +877,7 @@ class Framebuffer {
                                   GL_DEPTH_ATTACHMENT,
                                   GL_RENDERBUFFER,
                                   depthrenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
         assert(get_attachment_name(GL_DEPTH_ATTACHMENT) == std::string());
         draw_buffers["renderbuffer"] = GL_DEPTH_ATTACHMENT;
         update_draw_buffers();
