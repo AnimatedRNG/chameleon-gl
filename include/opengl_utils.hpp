@@ -479,6 +479,28 @@ class Texture {
         glBindTexture(_texture_enum, 0);
     }
 
+    void copyTo(Texture& other,
+                const GLint& src_level = 0,
+                const GLint& dst_level = 0,
+                const GLint& src_x = 0,
+                const GLint& src_y = 0,
+                const GLint& dst_x = 0,
+                const GLint& dst_y = 0,
+                const GLint& width = -1,
+                const GLint& height = -1) {
+        GLsizei w = width;
+        GLsizei h = height;
+        if (width == -1) {
+            w = this->width;
+        }
+        if (height == -1) {
+            h = this->height;
+        }
+
+        glCopyImageSubData(this->id, this->_texture_enum, src_level, src_x, src_y, 0,
+                           other.id, other._texture_enum, dst_level, dst_x, dst_y, 0, w, h, 0);
+    }
+
     void clear(const GLint& level,
                const GLvoid* data,
                glm::ivec4 region = glm::ivec4(-1),
