@@ -143,7 +143,7 @@ class Mesh : public Drawable {
         return vbo;
     };
 
-    virtual GLint get_vao() override {
+    virtual GLuint get_vao() override {
         return vao;
     };
 

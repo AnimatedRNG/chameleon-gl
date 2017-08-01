@@ -25,6 +25,7 @@
 #include <GL/glew.h>
 
 #include <unordered_set>
+#include <assert.h>
 
 #include "image_data.hpp"
 
@@ -94,6 +95,7 @@ class GLContext {
     static void gl_init() {
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
                       &max_texture_image_units);
+        assert(GLEW_ARB_direct_state_access);
     }
 
     static void gl_refresh() {

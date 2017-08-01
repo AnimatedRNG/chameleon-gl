@@ -244,7 +244,8 @@ class Buffer {
   public:
     Buffer() :
         target(GL_ARRAY_BUFFER) {
-        glGenBuffers(1, &id);
+        //glGenBuffers(1, &id);
+        glCreateBuffers(1, &id);
     }
 
     Buffer(const Buffer& other) :
@@ -260,15 +261,19 @@ class Buffer {
               void* data,
               const size_t& num_bytes,
               const GLenum& usage_type = GL_STATIC_COPY) {
-        bool not_bound = GLContext::is_buffer_bound(id);
-        bind(target);
-        glBufferData(target,
+        //bool not_bound = GLContext::is_buffer_bound(id);
+        //bind(target);
+        /*glBufferData(target,
                      num_bytes,
                      data,
-                     usage_type);
-        if (not_bound) {
+                     usage_type);*/
+        glNamedBufferData(id,
+                          num_bytes,
+                          data,
+                          usage_type);
+        /*if (not_bound) {
             unbind();
-        }
+        }*/
     }
 
     void update(const GLenum& target,
@@ -310,14 +315,18 @@ class VBO {
         _num_vertices(num_vertices) {
         for (size_t i = 0; i < vertex_data.size(); i++) {
             Buffer vertex_buffer;
-            vertex_buffer.bind(GL_ARRAY_BUFFER);
+            //vertex_buffer.bind(GL_ARRAY_BUFFER);
 
             auto va = vertex_attributes[i];
-            glBufferData(GL_ARRAY_BUFFER,
+            /*glBufferData(GL_ARRAY_BUFFER,
                          num_vertices * va.vector_size * sizeof(GLfloat),
                          &(vertex_data[i][0]),
-                         GL_STATIC_DRAW);
-            vertex_buffer.unbind();
+                         GL_STATIC_DRAW);*/
+            glNamedBufferData(vertex_buffer.id,
+                              num_vertices * va.vector_size * sizeof(GLfloat),
+                              &(vertex_data[i][0]),
+                              GL_STATIC_DRAW);
+            //vertex_buffer.unbind();
             _vertex_buffer.push_back(vertex_buffer);
         }
         assert(_vertex_attributes.size() == vertex_data.size());
@@ -334,7 +343,7 @@ class VBO {
 
     }
 
-    bool draw() {
+    bool draw(GLuint& vao) {
         std::unordered_set<GLuint> indices;
         for (size_t i = 0; i < _vertex_attributes.size(); i++) {
             const VertexAttribute va = _vertex_attributes[i];
@@ -345,7 +354,8 @@ class VBO {
                 return false;
             }
 
-            glEnableVertexAttribArray(va.index);
+            // Eventually replace this with something more DSA
+            glEnableVertexArrayAttrib(vao, va.index);
             _vertex_buffer[i].bind(GL_ARRAY_BUFFER);
             glVertexAttribPointer(
                 i,
@@ -354,7 +364,7 @@ class VBO {
                 GL_FALSE,
                 va.stride,
                 va.offset
-            );
+                );
             _vertex_buffer[i].unbind();
             indices.insert(va.index);
         }
@@ -364,7 +374,7 @@ class VBO {
         for (size_t i = 0; i < _vertex_attributes.size(); i++) {
             const VertexAttribute va = _vertex_attributes[i];
 
-            glDisableVertexAttribArray(va.index);
+            glDisableVertexArrayAttrib(vao, va.index);
         }
 
         return true;
