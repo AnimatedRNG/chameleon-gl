@@ -401,7 +401,7 @@ class Texture {
         height(h),
         depth(d),
         _texture_enum(texture_enum) {
-        glGenTextures(1, &id);
+        glCreateTextures(texture_enum, 1, &id);
     }
 
     Texture(const std::string& filename,
@@ -453,31 +453,37 @@ class Texture {
               const GLvoid* data,
               const bool& mip_map = true,
               void (*tex_parameter_callback)(void) = NULL) {
-        glBindTexture(_texture_enum, id);
         assert(parameters.size() == 0 ^ tex_parameter_callback == NULL);
         if (tex_parameter_callback != NULL) {
+            glBindTexture(_texture_enum, id);
             tex_parameter_callback();
+            glBindTexture(_texture_enum, 0);
         } else {
             for (auto parameter : parameters) {
                 apply_parameter(parameter);
             }
         }
-        glTexImage2D(_texture_enum, level, internalFormat,
-                     (GLsizei) width, (GLsizei) height, 0,
-                     format, type, data);
+
+        glBindTexture(_texture_enum, id);
+        glTextureStorage2D(id, this->depth,
+                           internalFormat,
+                           (GLsizei) width, (GLsizei) height);
+        glBindTexture(_texture_enum, 0);
+        glTextureSubImage2D(id, level,
+                            0, 0,
+                            (GLsizei) width, (GLsizei) height,
+                            format, type, data);
         if (mip_map) {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                            GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                            GL_LINEAR_MIPMAP_LINEAR);
-            glGenerateMipmap(GL_TEXTURE_2D);
+            glTextureParameteri(id, GL_TEXTURE_MAG_FILTER,
+                                GL_LINEAR);
+            glTextureParameteri(id, GL_TEXTURE_MIN_FILTER,
+                                GL_LINEAR_MIPMAP_LINEAR);
+            glGenerateTextureMipmap(id);
         }
 
         _internalFormat = internalFormat;
         this->format = format;
         _type = type;
-
-        glBindTexture(_texture_enum, 0);
     }
 
     void copyTo(Texture& other,
@@ -528,7 +534,7 @@ class Texture {
     void bind(const bool& active_texture = true) {
         if (active_texture) {
             this->texture_image_unit = GLContext::get_texturing_unit();
-            glActiveTexture(texture_image_unit);
+            glBindTextureUnit(texture_image_unit, id);
         }
 
         glBindTexture(_texture_enum, id);
@@ -544,28 +550,28 @@ class Texture {
     void apply_parameter(const TextureParameter& parameter) {
         switch (parameter) {
             case WRAP_ST_CLAMP_TO_BORDER:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
                 break;
             case WRAP_ST_CLAMP_TO_EDGE:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 break;
             case WRAP_ST_REPEAT:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
                 break;
             case WRAP_ST_MIRRORED_REPEAT:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
                 break;
             case FILTER_MIN_MAG_NEAREST:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 break;
             case FILTER_MIN_MAG_LINEAR:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 break;
         }
     }
