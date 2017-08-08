@@ -314,7 +314,10 @@ class VAO {
                               GL_STATIC_DRAW);
             _vertex_buffer.push_back(vertex_buffer);
         }
+
         assert(_vertex_attributes.size() == vertex_data.size());
+
+        create_resources();
     }
 
     VAO(const VAO& other) {
@@ -329,20 +332,20 @@ class VAO {
 
     }
 
-    bool draw() {
+    void create_resources() {
         std::unordered_set<GLuint> indices;
         glBindVertexArray(id);
         for (size_t i = 0; i < _vertex_attributes.size(); i++) {
             const VertexAttribute va = _vertex_attributes[i];
 
             if (indices.count(va.index)) {
-                ERROR("Vertex attribute " << va <<
-                      " has an index conflict with another vertex attribute!");
-                return false;
+                throw std::runtime_error("Vertex attribute " + TOS(va) +
+                                         " has an index conflict" +
+                                         " with another vertex attribute!");
             }
 
             // Eventually replace this with something more DSA
-            /*glEnableVertexArrayAttrib(id, va.index);
+            glEnableVertexArrayAttrib(id, va.index);
             _vertex_buffer[i].bind(GL_ARRAY_BUFFER);
             glVertexAttribPointer(
                 i,
@@ -352,33 +355,16 @@ class VAO {
                 va.stride,
                 va.offset
             );
-            _vertex_buffer[i].unbind();*/
-            /*glEnableVertexArrayAttrib(id, va.index);
-            glVertexArrayAttribFormat(id,
-                                      i,
-                                      va.vector_size,
-                                      GL_FLOAT,
-                                      GL_FALSE,
-                                      0);
-            glVertexArrayVertexBuffer(id,
-                                      i,
-                                      _vertex_buffer[i].id,
-                                      0,
-                                      va.stride);
-            glVertexArrayAttribBinding(id,
-                                       i,
-                                       i);*/
-
+            _vertex_buffer[i].unbind();
             indices.insert(va.index);
         }
+        glBindVertexArray(0);
+    }
 
+    bool draw() {
+        glBindVertexArray(id);
         glDrawArrays(_primitive_type, 0, _num_vertices);
-
-        for (size_t i = 0; i < _vertex_attributes.size(); i++) {
-            const VertexAttribute va = _vertex_attributes[i];
-
-            glDisableVertexArrayAttrib(id, va.index);
-        }
+        glBindVertexArray(0);
 
         return true;
     }
