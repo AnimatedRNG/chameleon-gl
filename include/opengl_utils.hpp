@@ -342,7 +342,7 @@ class VAO {
             }
 
             // Eventually replace this with something more DSA
-            glEnableVertexArrayAttrib(id, va.index);
+            /*glEnableVertexArrayAttrib(id, va.index);
             _vertex_buffer[i].bind(GL_ARRAY_BUFFER);
             glVertexAttribPointer(
                 i,
@@ -352,22 +352,22 @@ class VAO {
                 va.stride,
                 va.offset
             );
-            _vertex_buffer[i].unbind();
-            /*glEnableVertexArrayAttrib(vao, va.index);
-            glVertexArrayAttribBinding(vao,
-                                   va.index,
-                                   0);
-            glVertexArrayAttribFormat(vao,
-                                  va.index,
-                                  va.vector_size,
-                                  GL_FLOAT,
-                                  GL_FALSE,
-                                  0);
-            glVertexArrayVertexBuffer(vao,
-                                  0,
-                                  _vertex_buffer[i].id,
-                                  va.stride,
-                                  0);*/
+            _vertex_buffer[i].unbind();*/
+            /*glEnableVertexArrayAttrib(id, va.index);
+            glVertexArrayAttribFormat(id,
+                                      i,
+                                      va.vector_size,
+                                      GL_FLOAT,
+                                      GL_FALSE,
+                                      0);
+            glVertexArrayVertexBuffer(id,
+                                      i,
+                                      _vertex_buffer[i].id,
+                                      0,
+                                      va.stride);
+            glVertexArrayAttribBinding(id,
+                                       i,
+                                       i);*/
 
             indices.insert(va.index);
         }
