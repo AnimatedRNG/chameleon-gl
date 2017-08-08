@@ -38,15 +38,14 @@
 class Mesh : public Drawable {
   public:
     Mesh() {
-        glGenVertexArrays(1, &vao);
     }
 
     Mesh(const std::string filename) : Mesh() {
         load(filename);
     }
 
-    Mesh(VBO& vbo) : Mesh() {
-        load_from_vbo(vbo);
+    Mesh(VAO& vao) : Mesh() {
+        load_from_vao(vao);
     }
 
     void load(const std::string& filename) {
@@ -112,42 +111,36 @@ class Mesh : public Drawable {
         vertex_data.push_back(&(positions[0].x));
         vertex_data.push_back(&(normals[0].x));
         vertex_data.push_back(&(uvs[0].x));
-        glBindVertexArray(vao);
-        this->vbo = VBO(vertex_data,
+        this->vao = VAO(vertex_data,
                         attribs,
                         positions.size(),
                         GL_TRIANGLES);
     }
 
-    void load_from_vbo(VBO& vbo) {
-        this->vbo = vbo;
+    void load_from_vao(VAO& vao) {
+        this->vao = vao;
     }
 
     static Mesh construct_fullscreen_quad() {
         const std::vector<VertexAttribute> attribs({{0, 3, 0, 0}});
         std::vector<GLfloat*> vertex_data;
         vertex_data.push_back((GLfloat*) GLContext::quad_vertex_buffer_data);
-        VBO vbo(vertex_data,
+        VAO vao(vertex_data,
                 attribs,
                 sizeof(GLContext::quad_vertex_buffer_data) /
                 sizeof(GLContext::quad_vertex_buffer_data[0]),
                 GL_TRIANGLES);
-        return Mesh(vbo);
+        return Mesh(vao);
     }
 
     virtual void on_draw() override {
 
     };
 
-    virtual VBO get_vbo() override {
-        return vbo;
-    };
-
-    virtual GLuint get_vao() override {
+    virtual VAO get_vao() override {
         return vao;
     };
 
   private:
-    GLuint vao;
-    VBO vbo;
+    VAO vao;
 };

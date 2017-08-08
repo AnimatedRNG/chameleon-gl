@@ -25,6 +25,5 @@
 class Drawable {
   public:
     virtual void on_draw() = 0;
-    virtual VBO get_vbo() = 0;
-    virtual GLuint get_vao() = 0;
+    virtual VAO get_vao() = 0;
 };

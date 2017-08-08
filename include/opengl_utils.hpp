@@ -289,13 +289,13 @@ class Buffer {
     GLenum target;
 };
 
-class VBO {
+class VAO {
   public:
-    VBO() {
+    VAO() {
 
     }
 
-    VBO(const std::vector<GLfloat*>& vertex_data,
+    VAO(const std::vector<GLfloat*>& vertex_data,
         const std::vector<VertexAttribute>& vertex_attributes,
         GLuint num_vertices,
         GLenum primitive_type) :
@@ -303,6 +303,7 @@ class VBO {
         _vertex_attributes(vertex_attributes),
         _primitive_type(primitive_type),
         _num_vertices(num_vertices) {
+        glCreateVertexArrays(1, &id);
         for (size_t i = 0; i < vertex_data.size(); i++) {
             Buffer vertex_buffer;
 
@@ -316,19 +317,21 @@ class VBO {
         assert(_vertex_attributes.size() == vertex_data.size());
     }
 
-    VBO(const VBO& other) {
+    VAO(const VAO& other) {
         this->_num_vertices = other._num_vertices;
         this->_vertex_buffer = std::vector<Buffer>(other._vertex_buffer);
         this->_primitive_type = other._primitive_type;
         this->_vertex_attributes = other._vertex_attributes;
+        this->id = other.id;
     }
 
-    ~VBO() {
+    ~VAO() {
 
     }
 
-    bool draw(GLuint& vao) {
+    bool draw() {
         std::unordered_set<GLuint> indices;
+        glBindVertexArray(id);
         for (size_t i = 0; i < _vertex_attributes.size(); i++) {
             const VertexAttribute va = _vertex_attributes[i];
 
@@ -339,7 +342,7 @@ class VBO {
             }
 
             // Eventually replace this with something more DSA
-            glEnableVertexArrayAttrib(vao, va.index);
+            glEnableVertexArrayAttrib(id, va.index);
             _vertex_buffer[i].bind(GL_ARRAY_BUFFER);
             glVertexAttribPointer(
                 i,
@@ -348,8 +351,24 @@ class VBO {
                 GL_FALSE,
                 va.stride,
                 va.offset
-                );
+            );
             _vertex_buffer[i].unbind();
+            /*glEnableVertexArrayAttrib(vao, va.index);
+            glVertexArrayAttribBinding(vao,
+                                   va.index,
+                                   0);
+            glVertexArrayAttribFormat(vao,
+                                  va.index,
+                                  va.vector_size,
+                                  GL_FLOAT,
+                                  GL_FALSE,
+                                  0);
+            glVertexArrayVertexBuffer(vao,
+                                  0,
+                                  _vertex_buffer[i].id,
+                                  va.stride,
+                                  0);*/
+
             indices.insert(va.index);
         }
 
@@ -358,11 +377,13 @@ class VBO {
         for (size_t i = 0; i < _vertex_attributes.size(); i++) {
             const VertexAttribute va = _vertex_attributes[i];
 
-            glDisableVertexArrayAttrib(vao, va.index);
+            glDisableVertexArrayAttrib(id, va.index);
         }
 
         return true;
     }
+
+    GLuint id;
   private:
     std::vector<Buffer> _vertex_buffer;
     std::vector<VertexAttribute> _vertex_attributes;

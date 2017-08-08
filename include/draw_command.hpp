@@ -45,11 +45,9 @@ public:
     void operator()() {
         _program.bind();
         _drawable.on_draw();
-        GLuint vao = _drawable.get_vao();
-        VBO vbo = _drawable.get_vbo();
+        VAO vao = _drawable.get_vao();
 
-        glBindVertexArray(vao);
-        vbo.draw(vao);
+        vao.draw();
     }
 
     template <typename T>
