@@ -745,59 +745,59 @@ class Program {
     }
 
     void _set_uniform(const GLint& location, GLfloat value) {
-        glUniform1f(location, value);
+        glProgramUniform1f(id, location, value);
     }
 
     void _set_uniform(const GLint& location, glm::vec2 value) {
-        glUniform2f(location, value.x, value.y);
+        glProgramUniform2f(id, location, value.x, value.y);
     }
 
     void _set_uniform(const GLint& location, glm::vec3 value) {
-        glUniform3f(location, value.x, value.y, value.z);
+        glProgramUniform3f(id, location, value.x, value.y, value.z);
     }
 
     void _set_uniform(const GLint& location, glm::vec4 value) {
-        glUniform4f(location, value.x, value.y, value.z, value.w);
+        glProgramUniform4f(id, location, value.x, value.y, value.z, value.w);
     }
 
     void _set_uniform(const GLint& location, float value[4]) {
-        glUniform4f(location, value[0], value[1], value[2], value[3]);
+        glProgramUniform4f(id, location, value[0], value[1], value[2], value[3]);
     }
 
     void _set_uniform(const GLint& location, GLint value) {
-        glUniform1i(location, value);
+        glProgramUniform1i(id, location, value);
     }
 
     void _set_uniform(const GLint& location, glm::ivec2 value) {
-        glUniform2i(location, value.x, value.y);
+        glProgramUniform2i(id, location, value.x, value.y);
     }
 
     void _set_uniform(const GLint& location, glm::ivec3 value) {
-        glUniform3i(location, value.x, value.y, value.z);
+        glProgramUniform3i(id, location, value.x, value.y, value.z);
     }
 
     void _set_uniform(const GLint& location, glm::ivec4 value) {
-        glUniform4i(location, value.x, value.y, value.z, value.w);
+        glProgramUniform4i(id, location, value.x, value.y, value.z, value.w);
     }
 
     void _set_uniform(const GLint& location, int value[4]) {
-        glUniform4i(location, value[0], value[1], value[2], value[3]);
+        glProgramUniform4i(id, location, value[0], value[1], value[2], value[3]);
     }
 
     void _set_uniform(const GLint& location, glm::mat2 value) {
-        glUniformMatrix2fv(location, 1, GL_FALSE, &(value[0][0]));
+        glProgramUniformMatrix2fv(id, location, 1, GL_FALSE, &(value[0][0]));
     }
 
     void _set_uniform(const GLint& location, glm::mat3 value) {
-        glUniformMatrix3fv(location, 1, GL_FALSE, &(value[0][0]));
+        glProgramUniformMatrix3fv(id, location, 1, GL_FALSE, &(value[0][0]));
     }
 
     void _set_uniform(const GLint& location, glm::mat4 value) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, &(value[0][0]));
+        glProgramUniformMatrix4fv(id, location, 1, GL_FALSE, &(value[0][0]));
     }
 
     void _set_uniform(const GLint& location, Texture& value) {
-        glUniform1i(location, value.texture_image_unit);
+        glProgramUniform1i(id, location, value.texture_image_unit);
     }
 
     std::vector<GLint> shader_ids;
