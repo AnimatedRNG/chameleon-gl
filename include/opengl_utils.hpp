@@ -596,14 +596,22 @@ class Program {
         id = glCreateProgram();
     }
 
-    bool operator==(const Program& other) const {
-        return (this->id == other.id);
+    Program(const Program& other) {
+        this->shader_ids = other.shader_ids;
+        this->uniform_cache = other.uniform_cache;
+        this->ssbo_binding_map = other.ssbo_binding_map;
+        this->last_ssbo_binding_point = other.last_ssbo_binding_point;
+        this->id = other.id;
     }
 
     ~Program() {
         glDeleteProgram(id);
         for (auto& shader : *shader_ids)
             glDeleteShader(shader);
+    }
+
+    bool operator==(const Program& other) const {
+        return (this->id == other.id);
     }
 
     std::string compile_shader(const std::string& filename_or_str,
@@ -806,9 +814,9 @@ class Program {
         glProgramUniform1i(id, location, value.texture_image_unit);
     }
 
-    std::unique_ptr<std::vector<GLint>> shader_ids;
-    std::unique_ptr<std::unordered_map<std::string, GLint>> uniform_cache;
-    std::unique_ptr<std::unordered_map<GLuint, GLuint>> ssbo_binding_map;
+    std::shared_ptr<std::vector<GLint>> shader_ids;
+    std::shared_ptr<std::unordered_map<std::string, GLint>> uniform_cache;
+    std::shared_ptr<std::unordered_map<GLuint, GLuint>> ssbo_binding_map;
     int last_ssbo_binding_point;
 };
 
