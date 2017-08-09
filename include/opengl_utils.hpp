@@ -833,6 +833,14 @@ class Framebuffer {
         }
     }
 
+    Framebuffer(const Framebuffer& other) {
+        this->textures = other.textures;
+        this->draw_buffers = other.draw_buffers;
+        this->width = other.width;
+        this->height = other.height;
+        this->id = other.id;
+    }
+
     void on_resize(const int& width, const int& height) {
         this->width = width;
         this->height = height;
