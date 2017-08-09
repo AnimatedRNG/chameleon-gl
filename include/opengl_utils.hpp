@@ -816,7 +816,7 @@ class Framebuffer {
         draw_buffers(),
         width(-1),
         height(-1) {
-        glGenFramebuffers(1, &id);
+        glCreateFramebuffers(1, &id);
     }
 
     explicit Framebuffer(const int w, const int h, const bool& typical,
@@ -827,7 +827,7 @@ class Framebuffer {
         draw_buffers(),
         width(w),
         height(h) {
-        glGenFramebuffers(1, &id);
+        glCreateFramebuffers(1, &id);
         if (typical) {
             typical_fbo(format, internal_format, type);
         }
@@ -860,13 +860,10 @@ class Framebuffer {
                       const GLenum& attachment_point,
                       Texture& texture,
                       const int& level = 0) {
-        glBindFramebuffer(GL_FRAMEBUFFER, id);
-        texture.bind(false);
-        glFramebufferTexture(GL_FRAMEBUFFER,
-                             attachment_point,
-                             texture.id,
-                             level);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glNamedFramebufferTexture(id,
+                                  attachment_point,
+                                  texture.id,
+                                  level);
 
         assert(get_attachment_name(attachment_point) == std::string());
         draw_buffers[name] = attachment_point;
@@ -878,16 +875,15 @@ class Framebuffer {
     void create_renderbuffer(const int& width,
                              const int& height) {
         GLuint depthrenderbuffer;
-        glGenRenderbuffers(1, &depthrenderbuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER,
-                              GL_DEPTH_COMPONENT,
-                              width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                  GL_DEPTH_ATTACHMENT,
-                                  GL_RENDERBUFFER,
-                                  depthrenderbuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        glCreateRenderbuffers(1, &depthrenderbuffer);
+        glNamedRenderbufferStorage(depthrenderbuffer,
+                                   GL_DEPTH_COMPONENT,
+                                   width,
+                                   height);
+        glNamedFramebufferRenderbuffer(id,
+                                       GL_DEPTH_ATTACHMENT,
+                                       GL_RENDERBUFFER,
+                                       depthrenderbuffer);
         assert(get_attachment_name(GL_DEPTH_ATTACHMENT) == std::string());
         draw_buffers["renderbuffer"] = GL_DEPTH_ATTACHMENT;
         update_draw_buffers();
@@ -978,7 +974,7 @@ class Framebuffer {
         std::vector<GLenum> tmp;
         for (auto it = draw_buffers.begin(); it != draw_buffers.end(); it++)
             tmp.push_back(it->second);
-        glDrawBuffers(tmp.size(), &tmp[0]);
+        glNamedFramebufferDrawBuffers(id, tmp.size(), &tmp[0]);
     }
 
 
