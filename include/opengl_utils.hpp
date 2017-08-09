@@ -29,6 +29,7 @@
 #include <cstring>
 #include <unordered_set>
 #include <unordered_map>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -588,7 +589,9 @@ class Texture {
 class Program {
   public:
     Program() :
-        ssbo_binding_map(),
+        shader_ids(new std::vector<GLint>),
+        uniform_cache(new std::unordered_map<std::string, GLint>),
+        ssbo_binding_map(new std::unordered_map<GLuint, GLuint>),
         last_ssbo_binding_point(0) {
         id = glCreateProgram();
     }
@@ -599,7 +602,7 @@ class Program {
 
     ~Program() {
         glDeleteProgram(id);
-        for (auto& shader : shader_ids)
+        for (auto& shader : *shader_ids)
             glDeleteShader(shader);
     }
 
@@ -653,7 +656,7 @@ class Program {
             return log;
         }
 
-        this->shader_ids.push_back(shader);
+        this->shader_ids->push_back(shader);
 
         glAttachShader(id, shader);
 
@@ -679,7 +682,7 @@ class Program {
             return false;
         }
 
-        for (auto& shader : shader_ids)
+        for (auto& shader : *shader_ids)
             glDetachShader(id, shader);
 
         return true;
@@ -697,20 +700,20 @@ class Program {
                                                 GL_SHADER_STORAGE_BLOCK,
                                                 buffer_name.c_str());
 
-        ssbo_binding_map[buffer.id] = last_ssbo_binding_point++;
+        (*ssbo_binding_map)[buffer.id] = last_ssbo_binding_point++;
 
         // Cache stuff so that this gets more efficient
         glShaderStorageBlockBinding(id,
                                     block_index,
-                                    ssbo_binding_map[buffer.id]);
+                                    ssbo_binding_map->at(buffer.id));
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         ssbo_binding_map[buffer.id],
+                         ssbo_binding_map->at(buffer.id),
                          buffer.id);
     }
 
     void remove_ssbo(Buffer& buffer) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         ssbo_binding_map[buffer.id],
+                         ssbo_binding_map->at(buffer.id),
                          0);
     }
 
@@ -725,11 +728,11 @@ class Program {
                      T value,
                      const bool& validate = true) {
         GLint location;
-        if (uniform_cache.count(name))
-            location = uniform_cache[name];
+        if (uniform_cache->count(name))
+            location = uniform_cache->at(name);
         else {
             location = glGetUniformLocation(id, name.c_str());
-            uniform_cache[name] = location;
+            (*uniform_cache)[name] = location;
         }
         if (location == -1 && validate) {
             ERROR("Could not find uniform " << name << "!" <<
@@ -803,9 +806,9 @@ class Program {
         glProgramUniform1i(id, location, value.texture_image_unit);
     }
 
-    std::vector<GLint> shader_ids;
-    std::unordered_map<std::string, GLint> uniform_cache;
-    std::unordered_map<GLuint, GLuint> ssbo_binding_map;
+    std::unique_ptr<std::vector<GLint>> shader_ids;
+    std::unique_ptr<std::unordered_map<std::string, GLint>> uniform_cache;
+    std::unique_ptr<std::unordered_map<GLuint, GLuint>> ssbo_binding_map;
     int last_ssbo_binding_point;
 };
 
