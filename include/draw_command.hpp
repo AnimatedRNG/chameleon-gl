@@ -54,7 +54,6 @@ public:
     static void set_uniform(const std::string& name,
                             T value) {
         for (Program& program : _programs) {
-            program.bind();
             program.set_uniform(name, value, false);
         }
     }
