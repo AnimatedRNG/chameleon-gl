@@ -61,7 +61,7 @@ class FramebufferRenderer : public Renderer {
 
     virtual void operator()(const int& width,
                             const int& height) override {
-        if (fbo.textures.size() == 0) {
+        if (fbo.textures->size() == 0) {
             fbo.on_resize(width, height);
             fbo.typical_fbo();
         }

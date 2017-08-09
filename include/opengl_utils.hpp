@@ -815,8 +815,8 @@ class Program {
 class Framebuffer {
   public:
     explicit Framebuffer() :
-        textures(),
-        draw_buffers(),
+        textures(new std::unordered_map<GLenum, Texture>),
+        draw_buffers(new std::unordered_map<std::string, GLenum>),
         width(-1),
         height(-1) {
         glCreateFramebuffers(1, &id);
@@ -877,8 +877,8 @@ class Framebuffer {
                                   level);
 
         assert(get_attachment_name(attachment_point) == std::string());
-        draw_buffers[name] = attachment_point;
-        textures[attachment_point] = texture;
+        (*draw_buffers)[name] = attachment_point;
+        (*textures)[attachment_point] = texture;
 
         update_draw_buffers();
     }
@@ -896,13 +896,13 @@ class Framebuffer {
                                        GL_RENDERBUFFER,
                                        depthrenderbuffer);
         assert(get_attachment_name(GL_DEPTH_ATTACHMENT) == std::string());
-        draw_buffers["renderbuffer"] = GL_DEPTH_ATTACHMENT;
+        (*draw_buffers)["renderbuffer"] = GL_DEPTH_ATTACHMENT;
         update_draw_buffers();
     }
 
     Texture get_texture(const GLenum& attachment) {
-        if (textures.count(attachment) == 1) {
-            return textures[attachment];
+        if (textures->count(attachment) == 1) {
+            return textures->at(attachment);
         } else {
             throw std::runtime_error(
                 "Framebuffer does not have attachment");
@@ -910,8 +910,8 @@ class Framebuffer {
     }
 
     Texture get_texture(const std::string& name) {
-        if (draw_buffers.count(name) == 1) {
-            return get_texture(draw_buffers[name]);
+        if (draw_buffers->count(name) == 1) {
+            return get_texture(draw_buffers->at(name));
         } else {
             throw std::runtime_error(
                 "Framebuffer does not have texture " + name);
@@ -967,14 +967,14 @@ class Framebuffer {
     }
 
     GLuint id;
-    std::unordered_map<GLenum, Texture> textures;
-    std::unordered_map<std::string, GLenum> draw_buffers;
+    std::shared_ptr<std::unordered_map<GLenum, Texture>> textures;
+    std::shared_ptr<std::unordered_map<std::string, GLenum>> draw_buffers;
     int width;
     int height;
 
   private:
     std::string get_attachment_name(const GLenum& attachment) {
-        for (auto it = draw_buffers.begin(); it != draw_buffers.end(); it++) {
+        for (auto it = draw_buffers->begin(); it != draw_buffers->end(); it++) {
             if (it->second == attachment)
                 return it->first;
         }
@@ -983,7 +983,7 @@ class Framebuffer {
 
     void update_draw_buffers() {
         std::vector<GLenum> tmp;
-        for (auto it = draw_buffers.begin(); it != draw_buffers.end(); it++)
+        for (auto it = draw_buffers->begin(); it != draw_buffers->end(); it++)
             tmp.push_back(it->second);
         glNamedFramebufferDrawBuffers(id, tmp.size(), &tmp[0]);
     }
