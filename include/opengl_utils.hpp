@@ -469,10 +469,13 @@ class Texture {
                            internalFormat,
                            (GLsizei) width, (GLsizei) height);
         glBindTexture(_texture_enum, 0);
-        glTextureSubImage2D(id, level,
-                            0, 0,
-                            (GLsizei) width, (GLsizei) height,
-                            format, type, data);
+
+        if (data != NULL) {
+            glTextureSubImage2D(id, level,
+                                0, 0,
+                                (GLsizei) width, (GLsizei) height,
+                                format, type, data);
+        }
         if (mip_map) {
             glTextureParameteri(id, GL_TEXTURE_MAG_FILTER,
                                 GL_LINEAR);
