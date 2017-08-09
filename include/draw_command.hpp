@@ -30,15 +30,21 @@
     std::vector<std::reference_wrapper<Program>> DrawCommand::_programs;
 
 class DrawCommand {
-public:
+  public:
     DrawCommand(Drawable& drawable,
-                Program& program) :
+                Program& program,
+                Framebuffer framebuffer = Framebuffer()) :
         _drawable(drawable),
-        _program(program) {
+        _program(program),
+        _framebuffer(framebuffer),
+        _use_framebuffer(false) {
         for (Program& program : _programs) {
             if (program == _program)
                 return;
         }
+
+        this->_use_framebuffer = (framebuffer.textures->size() > 0);
+
         _programs.push_back(std::ref(program));
     }
 
@@ -47,7 +53,13 @@ public:
         _drawable.on_draw();
         VAO vao = _drawable.get_vao();
 
+        if (_use_framebuffer) {
+            _framebuffer.bind();
+        }
         vao.draw();
+        if (_use_framebuffer) {
+            _framebuffer.unbind();
+        }
     }
 
     template <typename T>
@@ -62,8 +74,12 @@ public:
         drawCommand();
     }
 
-private:
+  private:
     Drawable& _drawable;
     Program& _program;
+    Framebuffer _framebuffer;
+
+    bool _use_framebuffer;
+
     static std::vector<std::reference_wrapper<Program>> _programs;
 };
