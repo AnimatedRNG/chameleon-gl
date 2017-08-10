@@ -59,8 +59,11 @@ class DrawCommand {
         if (_use_framebuffer) {
             _framebuffer.bind();
         }
+
         _uniform_map.apply(_program);
         vao.draw();
+        _uniform_map.post_render();
+
         if (_use_framebuffer) {
             _framebuffer.unbind();
         }

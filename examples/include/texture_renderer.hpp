@@ -36,6 +36,7 @@
 #include "mesh.hpp"
 #include "graphics_context.hpp"
 #include "draw_command.hpp"
+#include "uniform_map.hpp"
 
 class TextureRenderer : public Renderer {
   public:
@@ -58,13 +59,12 @@ class TextureRenderer : public Renderer {
 
     virtual void operator()(const int& width,
                             const int& height) override {
-        program.bind();
-        texture.bind();
-        program.set_uniform("tex", texture);
+        UniformMap map;
+        map.set("tex", texture);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        DrawCommand tex_draw(quad, program);
+        DrawCommand tex_draw(quad, program, map);
         DrawCommand::exec(tex_draw);
     }
 

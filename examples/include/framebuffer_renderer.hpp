@@ -72,10 +72,8 @@ class FramebufferRenderer : public Renderer {
         renderer(width, height);
         fbo.unbind();
 
-        Texture texture = fbo.get_texture("color");
-        program.bind();
-        texture.bind();
-        program.set_uniform("tex", texture);
+        UniformMap map;
+        map.set("tex", fbo.get_texture("color"));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

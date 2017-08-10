@@ -27,12 +27,14 @@
 
 #include "util.hpp"
 #include "opengl_utils.hpp"
+#include "gl_context.hpp"
 
 class UniformMap {
   public:
     UniformMap() :
         _map(new std::unordered_map <std::string,
-             std::function<void(Program&)>>) {
+             std::function<void(Program&)>>),
+        _texture_map(new std::unordered_map <std::string, Texture>) {
 
     }
 
@@ -44,6 +46,13 @@ class UniformMap {
                      std::unordered_map<std::string,
                      std::function<void(Program&)>>
                      > (map_copy);
+
+        auto old_texture_map = *(other._texture_map);
+        auto texture_map_copy =
+            new std::unordered_map<std::string, Texture> (old_texture_map);
+        this->_texture_map =
+            std::unique_ptr <std::unordered_map<std::string, Texture>>
+            (texture_map_copy);
     }
 
     template <typename T>
@@ -55,18 +64,26 @@ class UniformMap {
 
     void set(const std::string& key, Texture value) {
         (*_map)[key] = [&](Program & program) {
-            //value.bind();
             program.set_uniform(key, value);
         };
-        // Also log the fact that are using a texture -- so bind an image unit
+
+        (*_texture_map)[key] = value;
     }
 
     void apply(Program& program) {
         for (auto& pair : *_map) {
+            if (_texture_map->count(pair.first)) {
+                _texture_map->at(pair.first).bind();
+            }
             pair.second(program);
         }
+    }
+
+    void post_render() {
+        GLContext::clear_texturing_unit();
     }
   private:
     std::unique_ptr < std::unordered_map <
     std::string, std::function<void(Program&) >>> _map;
+    std::unique_ptr < std::unordered_map <std::string, Texture>> _texture_map;
 };
