@@ -24,6 +24,7 @@
 #include <functional>
 
 #include "drawable.hpp"
+#include "uniform_map.hpp"
 #include "opengl_utils.hpp"
 
 #define DRAW_STATIC_INIT() \
@@ -33,10 +34,12 @@ class DrawCommand {
   public:
     DrawCommand(Drawable& drawable,
                 Program& program,
+                UniformMap uniform_map = UniformMap(),
                 Framebuffer framebuffer = Framebuffer()) :
         _drawable(drawable),
         _program(program),
         _framebuffer(framebuffer),
+        _uniform_map(uniform_map),
         _use_framebuffer(false) {
         for (Program& program : _programs) {
             if (program == _program)
@@ -56,6 +59,7 @@ class DrawCommand {
         if (_use_framebuffer) {
             _framebuffer.bind();
         }
+        _uniform_map.apply(_program);
         vao.draw();
         if (_use_framebuffer) {
             _framebuffer.unbind();
@@ -78,6 +82,7 @@ class DrawCommand {
     Drawable& _drawable;
     Program& _program;
     Framebuffer _framebuffer;
+    UniformMap _uniform_map;
 
     bool _use_framebuffer;
 
