@@ -820,7 +820,49 @@ class Program {
     int last_ssbo_binding_point;
 };
 
-class Framebuffer {
+class AbstractFramebuffer {
+  public:
+    virtual int get_width() const = 0;
+    virtual int get_height() const = 0;
+    virtual void on_resize(const int& width, const int& height) = 0;
+    virtual void bind() = 0;
+    virtual void unbind() = 0;
+};
+
+class DummyFramebuffer {
+  public:
+    DummyFramebuffer(const int& width, const int& height) :
+        _width(width),
+        _height(height) {
+
+    }
+
+    virtual int get_width() const {
+        return _width;
+    }
+
+    virtual int get_height() const {
+        return _height;
+    }
+
+    virtual void on_resize(const int& width, const int& height) {
+        _width = width;
+        _height = height;
+    }
+
+    virtual void bind() {
+        // Does absolutely nothing
+    }
+
+    virtual void unbind() {
+        // Also does absolutely nothing
+    }
+  private:
+    int _width;
+    int _height;
+};
+
+class Framebuffer : public AbstractFramebuffer {
   public:
     explicit Framebuffer() :
         textures(new std::unordered_map<GLenum, Texture>),
@@ -850,11 +892,6 @@ class Framebuffer {
         this->width = other.width;
         this->height = other.height;
         this->id = other.id;
-    }
-
-    void on_resize(const int& width, const int& height) {
-        this->width = width;
-        this->height = height;
     }
 
     void bind_textures(std::unordered_map<std::string, Texture> attachments) {
@@ -926,12 +963,25 @@ class Framebuffer {
         }
     }
 
-    void bind() {
+    virtual int get_width() const override {
+        return this->width;
+    }
+
+    virtual int get_height() const override {
+        return this->height;
+    }
+
+    virtual void on_resize(const int& width, const int& height) override {
+        this->width = width;
+        this->height = height;
+    }
+
+    virtual void bind() override {
         glBindFramebuffer(GL_FRAMEBUFFER, id);
         glViewport(0, 0, width, height);
     }
 
-    void unbind() {
+    virtual void unbind() override {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
