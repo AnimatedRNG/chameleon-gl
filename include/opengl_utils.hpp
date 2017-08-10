@@ -1015,41 +1015,10 @@ class Framebuffer : public AbstractSurface {
 
 
     GLenum get_color_attachment_point(const int& index) {
-        switch (index) {
-            case 0:
-                return GL_COLOR_ATTACHMENT0;
-            case 1:
-                return GL_COLOR_ATTACHMENT1;
-            case 2:
-                return GL_COLOR_ATTACHMENT2;
-            case 3:
-                return GL_COLOR_ATTACHMENT3;
-            case 4:
-                return GL_COLOR_ATTACHMENT4;
-            case 5:
-                return GL_COLOR_ATTACHMENT5;
-            case 6:
-                return GL_COLOR_ATTACHMENT6;
-            case 7:
-                return GL_COLOR_ATTACHMENT7;
-            case 8:
-                return GL_COLOR_ATTACHMENT8;
-            case 9:
-                return GL_COLOR_ATTACHMENT9;
-            case 10:
-                return GL_COLOR_ATTACHMENT10;
-            case 11:
-                return GL_COLOR_ATTACHMENT11;
-            case 12:
-                return GL_COLOR_ATTACHMENT12;
-            case 13:
-                return GL_COLOR_ATTACHMENT13;
-            case 14:
-                return GL_COLOR_ATTACHMENT14;
-            case 15:
-                return GL_COLOR_ATTACHMENT15;
-            default:
-                throw std::runtime_error("Invalid color attachment!");
+        if (index < 16) {
+            return GL_COLOR_ATTACHMENT0 + index;
+        } else {
+            throw std::runtime_error("Invalid color attachment");
         }
     }
 };
