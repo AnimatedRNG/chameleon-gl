@@ -40,6 +40,7 @@
 
 #include "util.hpp"
 #include "gl_context.hpp"
+#include "abstract_surface.hpp"
 
 // TODO: Update EVERYTHING to use DSA
 // Seriously, OpenGL is not usable without DSA
@@ -820,49 +821,7 @@ class Program {
     int last_ssbo_binding_point;
 };
 
-class AbstractFramebuffer {
-  public:
-    virtual int get_width() const = 0;
-    virtual int get_height() const = 0;
-    virtual void on_resize(const int& width, const int& height) = 0;
-    virtual void bind() = 0;
-    virtual void unbind() = 0;
-};
-
-class DummyFramebuffer {
-  public:
-    DummyFramebuffer(const int& width, const int& height) :
-        _width(width),
-        _height(height) {
-
-    }
-
-    virtual int get_width() const {
-        return _width;
-    }
-
-    virtual int get_height() const {
-        return _height;
-    }
-
-    virtual void on_resize(const int& width, const int& height) {
-        _width = width;
-        _height = height;
-    }
-
-    virtual void bind() {
-        // Does absolutely nothing
-    }
-
-    virtual void unbind() {
-        // Also does absolutely nothing
-    }
-  private:
-    int _width;
-    int _height;
-};
-
-class Framebuffer : public AbstractFramebuffer {
+class Framebuffer : public AbstractSurface {
   public:
     explicit Framebuffer() :
         textures(new std::unordered_map<GLenum, Texture>),
@@ -1024,6 +983,14 @@ class Framebuffer : public AbstractFramebuffer {
         bind_textures(attachments);
     }
 
+    static std::shared_ptr<Framebuffer> cast_down(AbstractSurfacePtr ptr) {
+        return std::static_pointer_cast<Framebuffer>(ptr);
+    }
+
+    static AbstractSurfacePtr cast_up(std::shared_ptr<Framebuffer> ptr) {
+        return std::static_pointer_cast<AbstractSurface>(ptr);
+    }
+
     GLuint id;
     std::shared_ptr<std::unordered_map<GLenum, Texture>> textures;
     std::shared_ptr<std::unordered_map<std::string, GLenum>> draw_buffers;
@@ -1086,3 +1053,5 @@ class Framebuffer : public AbstractFramebuffer {
         }
     }
 };
+
+typedef std::shared_ptr<Framebuffer> FramebufferPtr;

@@ -22,7 +22,41 @@
 
 #include "abstract_surface.hpp"
 
-class Renderer {
+class DummyFramebuffer : public AbstractSurface {
   public:
-    virtual void operator()(AbstractSurfacePtr surface) = 0;
+    DummyFramebuffer() :
+        _width(-1),
+        _height(-1) {
+
+    }
+
+    DummyFramebuffer(const int& width, const int& height) :
+        _width(width),
+        _height(height) {
+
+    }
+
+    virtual int get_width() const {
+        return _width;
+    }
+
+    virtual int get_height() const {
+        return _height;
+    }
+
+    virtual void on_resize(const int& width, const int& height) {
+        _width = width;
+        _height = height;
+    }
+
+    virtual void bind() {
+        // Does absolutely nothing
+    }
+
+    virtual void unbind() {
+        // Also does absolutely nothing
+    }
+  private:
+    int _width;
+    int _height;
 };

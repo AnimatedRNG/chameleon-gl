@@ -42,7 +42,7 @@ class FramebufferRenderer : public Renderer {
     explicit FramebufferRenderer(InputController& controller, Renderer& renderer) :
         program(),
         ctrl(controller),
-        fbo(),
+        fbo(new Framebuffer()),
         renderer(renderer),
         quad() {
         program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER,
@@ -59,31 +59,28 @@ class FramebufferRenderer : public Renderer {
         glClearColor(0.0, 0.0, 0.0, 0.0);
     }
 
-    virtual void operator()(const int& width,
-                            const int& height) override {
-        if (fbo.textures->size() == 0) {
-            fbo.on_resize(width, height);
-            fbo.typical_fbo();
+    virtual void operator()(AbstractSurfacePtr surface) override {
+        int width = surface->get_width();
+        int height = surface->get_height();
+        if (fbo->get_width() < 0) {
+            fbo->on_resize(width, height);
+            fbo->typical_fbo();
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        fbo.bind();
-        renderer(width, height);
-        fbo.unbind();
+        renderer(fbo);
 
         UniformMap map;
-        map.set("tex", fbo.get_texture("color"));
+        map.set("tex", fbo->get_texture("color"));
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        DrawCommand tex_draw(quad, program);
+        DrawCommand tex_draw(quad, program, surface, map);
         DrawCommand::exec(tex_draw);
     }
   private:
     Program program;
     InputController& ctrl;
-    Framebuffer fbo;
+    FramebufferPtr fbo;
     Renderer& renderer;
     Mesh quad;
 };

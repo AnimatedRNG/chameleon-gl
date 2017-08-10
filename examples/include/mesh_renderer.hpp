@@ -36,6 +36,7 @@
 #include "graphics_context.hpp"
 #include "mesh.hpp"
 #include "draw_command.hpp"
+#include "clear_command.hpp"
 
 class MeshRenderer : public Renderer {
   public:
@@ -51,15 +52,16 @@ class MeshRenderer : public Renderer {
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-
-        glClearColor(0.0, 0.0, 0.0, 0.0);
     }
 
-    virtual void operator()(const int& width,
-                            const int& height) override {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    virtual void operator()(AbstractSurfacePtr surface) override {
+        ClearCommand clear(surface,
+                           ClearCommand::CLEAR_COLOR |
+                           ClearCommand::CLEAR_DEPTH,
+                           glm::vec4(0.0));
+        ClearCommand::exec(clear);
 
-        DrawCommand mesh_draw(mesh, program);
+        DrawCommand mesh_draw(mesh, program, surface);
         DrawCommand::exec(mesh_draw);
     }
   private:

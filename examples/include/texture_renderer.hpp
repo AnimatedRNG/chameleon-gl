@@ -36,6 +36,7 @@
 #include "mesh.hpp"
 #include "graphics_context.hpp"
 #include "draw_command.hpp"
+#include "clear_command.hpp"
 #include "uniform_map.hpp"
 
 class TextureRenderer : public Renderer {
@@ -53,18 +54,19 @@ class TextureRenderer : public Renderer {
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-
-        glClearColor(0.0, 0.0, 0.0, 0.0);
     }
 
-    virtual void operator()(const int& width,
-                            const int& height) override {
+    virtual void operator()(AbstractSurfacePtr surface) override {
         UniformMap map;
         map.set("tex", texture);
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ClearCommand clear(surface,
+                           ClearCommand::CLEAR_COLOR |
+                           ClearCommand::CLEAR_DEPTH,
+                           glm::vec4(0.0));
+        ClearCommand::exec(clear);
 
-        DrawCommand tex_draw(quad, program, map);
+        DrawCommand tex_draw(quad, program, surface, map);
         DrawCommand::exec(tex_draw);
     }
 

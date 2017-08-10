@@ -24,6 +24,7 @@
 #include <functional>
 
 #include "drawable.hpp"
+#include "abstract_surface.hpp"
 #include "uniform_map.hpp"
 #include "opengl_utils.hpp"
 
@@ -34,19 +35,17 @@ class DrawCommand {
   public:
     DrawCommand(Drawable& drawable,
                 Program& program,
-                UniformMap uniform_map = UniformMap(),
-                Framebuffer framebuffer = Framebuffer()) :
+                AbstractSurfacePtr framebuffer,
+                UniformMap uniform_map = UniformMap()) :
         _drawable(drawable),
         _program(program),
         _framebuffer(framebuffer),
         _uniform_map(uniform_map),
-        _use_framebuffer(false) {
+        _use_framebuffer(framebuffer->get_width() > 0) {
         for (Program& program : _programs) {
             if (program == _program)
                 return;
         }
-
-        this->_use_framebuffer = (framebuffer.textures->size() > 0);
 
         _programs.push_back(std::ref(program));
     }
@@ -57,7 +56,7 @@ class DrawCommand {
         VAO vao = _drawable.get_vao();
 
         if (_use_framebuffer) {
-            _framebuffer.bind();
+            _framebuffer->bind();
         }
 
         _uniform_map.apply(_program);
@@ -65,7 +64,7 @@ class DrawCommand {
         _uniform_map.post_render();
 
         if (_use_framebuffer) {
-            _framebuffer.unbind();
+            _framebuffer->unbind();
         }
     }
 
@@ -84,7 +83,7 @@ class DrawCommand {
   private:
     Drawable& _drawable;
     Program& _program;
-    Framebuffer _framebuffer;
+    AbstractSurfacePtr _framebuffer;
     UniformMap _uniform_map;
 
     bool _use_framebuffer;

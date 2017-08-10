@@ -23,6 +23,7 @@
 #include <iostream>
 #include <thread>
 #include <unordered_map>
+#include <memory>
 #include <assert.h>
 
 // OpenGL / glew Headers
@@ -36,6 +37,7 @@
 #include "sdl_helpers.hpp"
 #include "gl_context.hpp"
 #include "draw_command.hpp"
+#include "dummy_framebuffer.hpp"
 #include "renderer.hpp"
 
 class GraphicsContext {
@@ -134,7 +136,9 @@ class GraphicsContext {
         GLContext::gl_refresh();
         float viewport[4] = {0, 0, WIDTH, HEIGHT};
         DrawCommand::set_uniform("chml_viewport", viewport);
-        renderer(viewport[2], viewport[3]);
+        auto surface_ptr = std::static_pointer_cast<AbstractSurface>(
+                               std::shared_ptr<DummyFramebuffer>(new DummyFramebuffer(viewport[2], viewport[3])));
+        renderer(surface_ptr);
         SDL_GL_SwapWindow(this->wp.window);
 
         auto end = GET_TIME();

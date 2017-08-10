@@ -21,11 +21,6 @@
 #pragma once
 
 #include <iostream>
-#include <cmath>
-#include <string>
-
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
 
 // OpenGL / glew Headers
 #define GL3_PROTOTYPES 1
@@ -35,10 +30,11 @@
 #include "opengl_utils.hpp"
 #include "mesh.hpp"
 #include "input.hpp"
-#include "sdl_helpers.hpp"
 #include "renderer.hpp"
 #include "graphics_context.hpp"
 #include "draw_command.hpp"
+#include "clear_command.hpp"
+#include "abstract_surface.hpp"
 
 class SDFRenderer : public Renderer {
   public:
@@ -56,15 +52,16 @@ class SDFRenderer : public Renderer {
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-
-        glClearColor(0.0, 0.0, 0.0, 0.0);
     }
 
-    virtual void operator()(const int& width,
-                            const int& height) override {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    virtual void operator()(AbstractSurfacePtr surface) override {
+        ClearCommand clear(surface,
+                           ClearCommand::CLEAR_COLOR |
+                           ClearCommand::CLEAR_DEPTH,
+                           glm::vec4(0.0));
+        ClearCommand::exec(clear);
 
-        DrawCommand sdf_draw(mesh, program);
+        DrawCommand sdf_draw(mesh, program, surface);
         DrawCommand::exec(sdf_draw);
     }
 

@@ -20,9 +20,15 @@
 
 #pragma once
 
-#include "abstract_surface.hpp"
+#include <memory>
 
-class Renderer {
+class AbstractSurface {
   public:
-    virtual void operator()(AbstractSurfacePtr surface) = 0;
+    virtual int get_width() const = 0;
+    virtual int get_height() const = 0;
+    virtual void on_resize(const int& width, const int& height) = 0;
+    virtual void bind() = 0;
+    virtual void unbind() = 0;
 };
+
+typedef std::shared_ptr<AbstractSurface> AbstractSurfacePtr;
