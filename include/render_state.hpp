@@ -74,6 +74,12 @@ typedef struct {
 
 class RenderState {
   public:
+    explicit RenderState(
+        std::unordered_set<GLenum> enabled =
+            std::unordered_set<GLenum>({GL_MULTISAMPLE, GL_DITHER})) :
+        _enabled(new std::unordered_set<GLenum>(enabled)) {
+
+    }
 
   private:
     std::shared_ptr<std::unordered_set<GLenum>> _enabled;
