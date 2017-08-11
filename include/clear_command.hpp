@@ -50,32 +50,31 @@ class ClearCommand {
     }
 
     void operator()() {
-        // Use glClear for non-FBO, and glClearBuffer for FBO
-        if (_use_framebuffer) {
-            GLbitfield clear_field = 0;
+        GLbitfield clear_field = 0;
 
-            if (_buffers & CLEAR_COLOR) {
-                clear_field |= GL_COLOR_BUFFER_BIT;
-            }
-            if (_buffers & CLEAR_DEPTH) {
-                clear_field |= GL_DEPTH_BUFFER_BIT;
-            }
-            if (_buffers & CLEAR_STENCIL) {
-                clear_field |= GL_STENCIL_BUFFER_BIT;
-            }
-
-            // Ideally cache the results of previous clear color/depth/stencil
-            // changes so that we don't have to issue all these calls!
-            glClearColor(_clear_color[0],
-                         _clear_color[1],
-                         _clear_color[2],
-                         _clear_color[3]);
-            glClearDepth(_depth_value);
-            glClearStencil(_stencil_value);
-            glClear(clear_field);
-        } else {
-            // Implement as an FBO function called "clear"
+        if (_buffers & CLEAR_COLOR) {
+            clear_field |= GL_COLOR_BUFFER_BIT;
         }
+        if (_buffers & CLEAR_DEPTH) {
+            clear_field |= GL_DEPTH_BUFFER_BIT;
+        }
+        if (_buffers & CLEAR_STENCIL) {
+            clear_field |= GL_STENCIL_BUFFER_BIT;
+        }
+
+        _fbo->bind();
+
+        // Ideally cache the results of previous clear color/depth/stencil
+        // changes so that we don't have to issue all these calls!
+        glClearColor(_clear_color[0],
+                     _clear_color[1],
+                     _clear_color[2],
+                     _clear_color[3]);
+        glClearDepth(_depth_value);
+        glClearStencil(_stencil_value);
+        glClear(clear_field);
+
+        _fbo->unbind();
     }
 
     static void exec(ClearCommand& clearCommand) {
