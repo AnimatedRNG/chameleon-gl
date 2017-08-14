@@ -137,11 +137,6 @@ class RenderState {
 
     }
 
-    template <typename T>
-    void set_param(T value) {
-        throw std::runtime_error("Invalid parameter!");
-    }
-
     void set_param(const BlendFunction& value) {
         (*_params)["blend_function"] = [value]() {
             if (value.buf == UINT_MAX) {
@@ -260,6 +255,50 @@ class RenderState {
         (*_params)["stencil_operation"] = [value]() {
             glStencilOp(value.sfail, value.dpfail, value.dppass);
         };
+    }
+
+    // Applies the diff from this RenderState to the `second` RenderState
+    void apply_diff(const RenderState& second) const {
+        RenderState default_state;
+
+        std::unordered_set<GLenum> to_be_disabled;
+        std::unordered_set<GLenum> to_be_enabled;
+
+        for (auto first_enabled : *_enabled) {
+            if (!(second._enabled->count(first_enabled))) {
+                to_be_disabled.insert(first_enabled);
+            }
+        }
+
+        for (auto second_enabled : *_enabled) {
+            if (!(_enabled->count(second_enabled))) {
+                to_be_enabled.insert(second_enabled);
+            }
+        }
+
+        for (auto disable_param : to_be_disabled) {
+            glDisable(disable_param);
+        }
+
+        for (auto enable_param : to_be_enabled) {
+            glEnable(enable_param);
+        }
+
+        for (auto& param : * (second._params)) {
+            // If the param exists in both states, set the value
+            //
+            // And if the param exists in the second state, but not the first,
+            // set the value
+            param.second();
+        }
+
+        for (auto& param : *_params) {
+            // If the param exists in the first state, but not the
+            // second, then set the value to the default
+            if (!second._params->count(param.first)) {
+                default_state._params->at(param.first)();
+            }
+        }
     }
 
   private:
