@@ -40,84 +40,88 @@
 
 typedef struct {
     GLuint buf = UINT_MAX;
-    GLenum src_RGB;
-    GLenum dst_RGB;
-    GLenum src_alpha;
-    GLenum dst_alpha;
+    GLenum src_RGB = GL_ONE;
+    GLenum dst_RGB = GL_ZERO;
+    GLenum src_alpha = GL_ONE;
+    GLenum dst_alpha = GL_ZERO;
 } BlendFunction;
 
 typedef struct {
     GLuint buf = UINT_MAX;
-    GLenum mode_RGB;
-    GLenum mode_alpha;
+    GLenum mode_RGB = GL_FUNC_ADD;
+    GLenum mode_alpha = GL_FUNC_ADD;
 } BlendEquation;
 
 typedef struct {
-    GLfloat value;
-    GLboolean invert;
+    GLfloat value = 1.0;
+    GLboolean invert = GL_FALSE;
 } SampleCoverage;
 
 typedef struct {
-    GLfloat factor;
-    GLfloat units;
+    GLfloat factor = 0;
+    GLfloat units = 0;
 } PolygonOffset;
 
 typedef struct {
-    GLenum face;
-    GLenum mode;
+    GLenum face = GL_FRONT_AND_BACK; // CHECK
+    GLenum mode = GL_FILL;
 } PolygonMode;
 
+// Non-default
 typedef struct {
-    GLuint mask_number;
-    GLbitfield mask;
+    GLuint mask_number = 0;
+    GLbitfield mask = 0xFFFFFFFF;
 } SampleMask;
 
 typedef struct {
-    GLenum func;
-    GLint ref;
-    GLuint mask;
+    GLenum func = GL_ALWAYS;
+    GLint ref = 0;
+    GLuint mask = 0xFFFFFFFF;
 } StencilFunction;
 
 typedef struct {
-    GLenum sfail;
-    GLenum dpfail;
-    GLenum dppass;
+    GLenum sfail = GL_KEEP;
+    GLenum dpfail = GL_KEEP;
+    GLenum dppass = GL_KEEP;
 } StencilOperation;
 
 typedef struct {
-    GLenum opcode;
+    GLenum opcode = GL_COPY;
 } LogicalOperation;
 
 typedef struct {
-    GLenum mode;
+    GLenum mode = GL_BACK;
 } CullFace;
 
 typedef struct {
-    glm::dvec2 range;
+    glm::dvec2 range = glm::dvec2(0.0, 1.0);
 } DepthRange;
 
 typedef struct {
-    GLenum mode;
+    GLenum mode = GL_LESS;
 } DepthFunction;
 
 typedef struct {
-    GLfloat width;
+    GLfloat width = 1.0;
 } LineWidth;
 
 typedef struct {
-    GLfloat size;
+    GLfloat size = 1.0;
 } PointSize;
 
+// Non-default
 typedef struct {
-    GLuint index;
+    GLuint index = 0;
 } PrimitiveRestartIndex;
 
+// Non-default
 typedef struct {
-    GLfloat value;
+    GLfloat value = 1.0;
 } MinSampleShading;
 
+// Width/height are non-default; be careful
 typedef struct {
-    glm::ivec4 box;
+    glm::ivec4 box = glm::ivec4(0, 0, 0, 0);
 } ScissorBox;
 
 class RenderState {
