@@ -25,10 +25,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-// OpenGL / glew Headers
-#define GL3_PROTOTYPES 1
-#include <GL/glew.h>
-
 #include "util.hpp"
 #include "opengl_utils.hpp"
 #include "input.hpp"
