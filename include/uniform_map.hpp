@@ -63,7 +63,7 @@ class UniformMap {
     }
 
     void set(const std::string& key, Texture value) {
-        (*_map)[key] = [&](Program & program) {
+        (*_map)[key] = [key, value](Program & program) {
             program.set_uniform(key, value);
         };
 
