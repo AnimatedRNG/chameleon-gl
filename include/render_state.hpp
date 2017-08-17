@@ -36,7 +36,7 @@
 #include <GL/glew.h>
 
 #include "util.hpp"
-#include "opengl_utils.hpp"
+//#include "opengl_utils.hpp"
 
 typedef struct {
     GLuint buf = UINT_MAX;
@@ -270,7 +270,7 @@ class RenderState {
             }
         }
 
-        for (auto second_enabled : *_enabled) {
+        for (auto second_enabled : *(second._enabled)) {
             if (!(_enabled->count(second_enabled))) {
                 to_be_enabled.insert(second_enabled);
             }
@@ -289,6 +289,9 @@ class RenderState {
             //
             // And if the param exists in the second state, but not the first,
             // set the value
+            //
+            // TODO: Use fancy C++ tricks to compare params and only set if not
+            // equal
             param.second();
         }
 
