@@ -25,6 +25,7 @@
 
 #include "drawable.hpp"
 #include "abstract_surface.hpp"
+#include "command.hpp"
 #include "uniform_map.hpp"
 #include "render_state.hpp"
 #include "opengl_utils.hpp"
@@ -32,7 +33,7 @@
 #define DRAW_STATIC_INIT() \
     std::vector<std::reference_wrapper<Program>> DrawCommand::_programs;
 
-class DrawCommand {
+class DrawCommand : public Command {
   public:
     DrawCommand(Drawable& drawable,
                 Program& program,
@@ -53,7 +54,7 @@ class DrawCommand {
         _programs.push_back(std::ref(program));
     }
 
-    void operator()() {
+    void operator()() override {
         _program.bind();
         _drawable.on_draw();
         VAO vao = _drawable.get_vao();

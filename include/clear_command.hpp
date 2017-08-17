@@ -31,9 +31,10 @@
 
 #include "util.hpp"
 #include "abstract_surface.hpp"
+#include "command.hpp"
 #include "opengl_utils.hpp"
 
-class ClearCommand {
+class ClearCommand : public Command {
   public:
     ClearCommand(AbstractSurfacePtr ptr,
                  const uint8_t& buffers,
@@ -49,7 +50,7 @@ class ClearCommand {
 
     }
 
-    void operator()() {
+    void operator()() override {
         GLbitfield clear_field = 0;
 
         if (_buffers & CLEAR_COLOR) {
