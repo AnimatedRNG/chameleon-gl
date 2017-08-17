@@ -36,7 +36,6 @@
 #include <GL/glew.h>
 
 #include "util.hpp"
-//#include "opengl_utils.hpp"
 
 typedef struct {
     GLuint buf = UINT_MAX;
@@ -259,7 +258,7 @@ class RenderState {
 
     // Applies the diff from this RenderState to the `second` RenderState
     void apply_diff(const RenderState& second) const {
-        RenderState default_state;
+        RenderState default_state = construct_default_state();
 
         std::unordered_set<GLenum> to_be_disabled;
         std::unordered_set<GLenum> to_be_enabled;
@@ -305,6 +304,31 @@ class RenderState {
     }
 
   private:
+
+    static RenderState construct_default_state() {
+        RenderState default_state;
+
+        default_state.set_param(BlendFunction());
+        default_state.set_param(BlendEquation());
+        default_state.set_param(SampleCoverage());
+        default_state.set_param(PolygonOffset());
+        default_state.set_param(PolygonMode());
+        default_state.set_param(SampleMask());
+        default_state.set_param(StencilFunction());
+        default_state.set_param(StencilOperation());
+        default_state.set_param(LogicalOperation());
+        default_state.set_param(CullFace());
+        default_state.set_param(DepthRange());
+        default_state.set_param(DepthFunction());
+        default_state.set_param(LineWidth());
+        default_state.set_param(PointSize());
+        default_state.set_param(PrimitiveRestartIndex());
+        default_state.set_param(MinSampleShading());
+        default_state.set_param(ScissorBox());
+
+        return default_state;
+    }
+
     std::shared_ptr<std::unordered_set<GLenum>> _enabled;
     std::shared_ptr < std::unordered_map <
     std::string, std::function<void()>>> _params;
