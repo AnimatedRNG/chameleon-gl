@@ -24,6 +24,7 @@
 #include <thread>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 #include <assert.h>
 
 // OpenGL / glew Headers
@@ -36,6 +37,8 @@
 #include "event_handler.hpp"
 #include "sdl_helpers.hpp"
 #include "gl_context.hpp"
+#include "render_state.hpp"
+#include "command.hpp"
 #include "draw_command.hpp"
 #include "dummy_framebuffer.hpp"
 #include "renderer.hpp"
@@ -44,7 +47,8 @@ class GraphicsContext {
   public:
     GraphicsContext(EventHandler& ev_handler,
                     const std::unordered_map<std::string, void*>& options) :
-        handler(ev_handler) {
+        handler(ev_handler),
+        render_state() {
         SDL_Init(SDL_INIT_EVERYTHING);
         IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 
@@ -137,8 +141,22 @@ class GraphicsContext {
         float viewport[4] = {0, 0, WIDTH, HEIGHT};
         DrawCommand::set_uniform("chml_viewport", viewport);
         auto surface_ptr = std::static_pointer_cast<AbstractSurface>(
-                               std::shared_ptr<DummyFramebuffer>(new DummyFramebuffer(viewport[2], viewport[3])));
-        renderer(surface_ptr);
+                               std::shared_ptr<DummyFramebuffer>(
+                                   new DummyFramebuffer(viewport[2],
+                                           viewport[3])));
+        auto command_list = renderer(surface_ptr);
+
+        for (auto command : command_list) {
+            if (typeid(*command) == typeid(DrawCommand)) {
+                auto draw_command = std::static_pointer_cast<DrawCommand>(
+                                        command);
+                auto new_render_state = draw_command->get_render_state();
+                this->render_state.apply_diff(new_render_state);
+                render_state = new_render_state;
+            }
+            (*command)();
+        }
+
         SDL_GL_SwapWindow(this->wp.window);
 
         auto end = GET_TIME();
@@ -165,6 +183,8 @@ class GraphicsContext {
 
     SDL_Texture* render_texture;
     SDL::WindowParams wp;
+
+    RenderState render_state;
 
     EventHandler& handler;
 

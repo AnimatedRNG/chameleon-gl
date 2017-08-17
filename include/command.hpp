@@ -20,7 +20,13 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+
 class Command {
   public:
     virtual void operator()() = 0;
 };
+
+typedef std::shared_ptr<Command> CommandPtr;
+typedef std::vector<CommandPtr> CommandList;

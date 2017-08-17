@@ -33,9 +33,10 @@
 #include "opengl_utils.hpp"
 #include "input.hpp"
 #include "renderer.hpp"
-#include "graphics_context.hpp"
 #include "mesh.hpp"
+#include "command.hpp"
 #include "draw_command.hpp"
+#include "clear_command.hpp"
 
 class FramebufferRenderer : public Renderer {
   public:
@@ -44,22 +45,26 @@ class FramebufferRenderer : public Renderer {
         ctrl(controller),
         fbo(new Framebuffer()),
         renderer(renderer),
-        quad() {
+        quad(),
+        render_state( {
+        GL_MULTISAMPLE, GL_DITHER, GL_DEPTH_TEST
+    }) {
+        // Compile a shader that renders a fullscreen quad
         program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER,
                                true, true);
         program.compile_shader("shaders/texture_shader.fs", GL_FRAGMENT_SHADER,
                                true, true);
         program.link_program();
 
+        // Create a fullscreen quad mesh
         quad = Mesh::construct_fullscreen_quad();
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-
-        glClearColor(0.0, 0.0, 0.0, 0.0);
+        // Set this render state's depth function to GL_LESS
+        render_state.set_param(DepthFunction({GL_LESS}));
     }
 
-    virtual void operator()(AbstractSurfacePtr surface) override {
+    virtual CommandList operator()(AbstractSurfacePtr surface) override {
+        // Some ugly boilerplate rquired to request (and update) a framebuffer
         int width = surface->get_width();
         int height = surface->get_height();
         if (fbo->get_width() < 0) {
@@ -67,15 +72,37 @@ class FramebufferRenderer : public Renderer {
             fbo->typical_fbo();
         }
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        CommandList commands;
 
-        renderer(fbo);
+        // Adds command to clear screen
+        commands.push_back(CommandPtr(new ClearCommand({
+            surface,
+            ClearCommand::CLEAR_COLOR |
+            ClearCommand::CLEAR_DEPTH,
+            glm::vec4(0.0)
+        })));
 
+        // Append the commands of the inner rendering operation to the list
+        auto nested_commands = renderer(fbo);
+        commands.insert(commands.end(),
+                        nested_commands.begin(),
+                        nested_commands.end());
+
+        // Binds the framebuffer's color attachment backing texture to a uniform
+        // map
         UniformMap map;
         map.set("tex", fbo->get_texture("color"));
 
-        DrawCommand tex_draw(quad, program, surface, map);
-        DrawCommand::exec(tex_draw);
+        // Draw to fullscreen quad
+        commands.push_back(CommandPtr(new DrawCommand({
+            quad,
+            program,
+            surface,
+            map,
+            render_state
+        })));
+
+        return commands;
     }
   private:
     Program program;
@@ -83,4 +110,5 @@ class FramebufferRenderer : public Renderer {
     FramebufferPtr fbo;
     Renderer& renderer;
     Mesh quad;
+    RenderState render_state;
 };

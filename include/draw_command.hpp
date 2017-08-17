@@ -72,6 +72,10 @@ class DrawCommand : public Command {
         }
     }
 
+    RenderState get_render_state() {
+        return this->_render_state;
+    }
+
     template <typename T>
     static void set_uniform(const std::string& name,
                             T value) {

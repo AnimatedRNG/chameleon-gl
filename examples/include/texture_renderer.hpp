@@ -34,7 +34,7 @@
 #include "renderer.hpp"
 #include "input.hpp"
 #include "mesh.hpp"
-#include "graphics_context.hpp"
+#include "command.hpp"
 #include "draw_command.hpp"
 #include "clear_command.hpp"
 #include "uniform_map.hpp"
@@ -43,7 +43,10 @@ class TextureRenderer : public Renderer {
   public:
     explicit TextureRenderer(InputController& controller, Texture& tex) :
         quad(),
-        texture(tex) {
+        texture(tex),
+        render_state( {
+        GL_MULTISAMPLE, GL_DITHER, GL_DEPTH_TEST, GL_CULL_FACE
+    }) {
         program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER,
                                true, true);
         program.compile_shader("shaders/texture_shader.fs", GL_FRAGMENT_SHADER,
@@ -52,22 +55,24 @@ class TextureRenderer : public Renderer {
 
         quad = Mesh::construct_fullscreen_quad();
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
+        render_state.set_param(DepthFunction({GL_LESS}));
     }
 
-    virtual void operator()(AbstractSurfacePtr surface) override {
+    virtual CommandList operator()(AbstractSurfacePtr surface) override {
         UniformMap map;
         map.set("tex", texture);
 
-        ClearCommand clear(surface,
-                           ClearCommand::CLEAR_COLOR |
-                           ClearCommand::CLEAR_DEPTH,
-                           glm::vec4(0.0));
-        ClearCommand::exec(clear);
+        CommandPtr clear(new ClearCommand(surface,
+                                          ClearCommand::CLEAR_COLOR |
+                                          ClearCommand::CLEAR_DEPTH,
+                                          glm::vec4(0.0)));
 
-        DrawCommand tex_draw(quad, program, surface, map);
-        DrawCommand::exec(tex_draw);
+        CommandPtr tex_draw(new DrawCommand(quad,
+                                            program,
+                                            surface,
+                                            map,
+                                            render_state));
+        return CommandList({clear, tex_draw});
     }
 
   private:
@@ -75,4 +80,5 @@ class TextureRenderer : public Renderer {
     GLuint vao;
     Mesh quad;
     Texture& texture;
+    RenderState render_state;
 };

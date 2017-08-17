@@ -20,9 +20,12 @@
 
 #pragma once
 
+#include <vector>
+
 #include "abstract_surface.hpp"
+#include "command.hpp"
 
 class Renderer {
   public:
-    virtual void operator()(AbstractSurfacePtr surface) = 0;
+    virtual CommandList operator()(AbstractSurfacePtr surface) = 0;
 };

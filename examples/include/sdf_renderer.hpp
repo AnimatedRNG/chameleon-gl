@@ -21,6 +21,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 // OpenGL / glew Headers
 #define GL3_PROTOTYPES 1
@@ -31,7 +32,7 @@
 #include "mesh.hpp"
 #include "input.hpp"
 #include "renderer.hpp"
-#include "graphics_context.hpp"
+#include "command.hpp"
 #include "draw_command.hpp"
 #include "clear_command.hpp"
 #include "abstract_surface.hpp"
@@ -41,7 +42,10 @@ class SDFRenderer : public Renderer {
     explicit SDFRenderer(InputController& controller) :
         program(),
         mesh(),
-        ctrl(controller) {
+        ctrl(controller),
+        render_state( {
+        GL_MULTISAMPLE, GL_DITHER, GL_DEPTH_TEST
+    }) {
         program.compile_shader("shaders/sdf_shader.vs", GL_VERTEX_SHADER,
                                true, true);
         program.compile_shader("shaders/sdf_shader.fs", GL_FRAGMENT_SHADER,
@@ -50,24 +54,26 @@ class SDFRenderer : public Renderer {
 
         mesh = Mesh::construct_fullscreen_quad();
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
+        render_state.set_param(DepthFunction({GL_LESS}));
     }
 
-    virtual void operator()(AbstractSurfacePtr surface) override {
-        ClearCommand clear(surface,
-                           ClearCommand::CLEAR_COLOR |
-                           ClearCommand::CLEAR_DEPTH,
-                           glm::vec4(0.0));
-        ClearCommand::exec(clear);
+    virtual CommandList operator()(AbstractSurfacePtr surface) override {
+        CommandPtr clear(new ClearCommand(surface,
+                                          ClearCommand::CLEAR_COLOR |
+                                          ClearCommand::CLEAR_DEPTH,
+                                          glm::vec4(0.0)));
 
-        DrawCommand sdf_draw(mesh, program, surface);
-        DrawCommand::exec(sdf_draw);
+        CommandPtr sdf_draw(new DrawCommand(mesh,
+                                            program,
+                                            surface,
+                                            UniformMap(),
+                                            render_state));
+        return CommandList({clear, sdf_draw});
     }
 
   private:
     Program program;
-    GLuint vao;
     Mesh mesh;
     InputController& ctrl;
+    RenderState render_state;
 };

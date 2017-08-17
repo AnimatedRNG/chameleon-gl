@@ -21,6 +21,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -33,7 +34,6 @@
 #include "opengl_utils.hpp"
 #include "input.hpp"
 #include "renderer.hpp"
-#include "graphics_context.hpp"
 #include "mesh.hpp"
 #include "draw_command.hpp"
 #include "clear_command.hpp"
@@ -43,29 +43,37 @@ class MeshRenderer : public Renderer {
     explicit MeshRenderer(InputController& controller, Mesh& mesh) :
         program(),
         ctrl(controller),
-        mesh(mesh) {
+        render_state( {
+        GL_MULTISAMPLE, GL_DITHER, GL_DEPTH_TEST, GL_CULL_FACE
+    }),
+    mesh(mesh) {
         program.compile_shader("shaders/simple_shader.vs", GL_VERTEX_SHADER,
                                true, true);
         program.compile_shader("shaders/simple_shader.fs", GL_FRAGMENT_SHADER,
                                true, true);
         program.link_program();
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
+        render_state.set_param(DepthFunction({GL_LESS}));
+        render_state.set_param(CullFace({GL_BACK}));
     }
 
-    virtual void operator()(AbstractSurfacePtr surface) override {
-        ClearCommand clear(surface,
-                           ClearCommand::CLEAR_COLOR |
-                           ClearCommand::CLEAR_DEPTH,
-                           glm::vec4(0.0));
-        ClearCommand::exec(clear);
+    virtual CommandList operator()(AbstractSurfacePtr surface) override {
+        CommandPtr clear(new ClearCommand(surface,
+                                          ClearCommand::CLEAR_COLOR |
+                                          ClearCommand::CLEAR_DEPTH,
+                                          glm::vec4(0.0)));
 
-        DrawCommand mesh_draw(mesh, program, surface);
-        DrawCommand::exec(mesh_draw);
+        CommandPtr mesh_draw(new DrawCommand(
+                                 mesh,
+                                 program,
+                                 surface,
+                                 UniformMap(),
+                                 render_state));
+        return CommandList({clear, mesh_draw});
     }
   private:
     Program program;
     InputController& ctrl;
+    RenderState render_state;
     Mesh& mesh;
 };
