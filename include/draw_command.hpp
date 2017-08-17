@@ -26,6 +26,7 @@
 #include "drawable.hpp"
 #include "abstract_surface.hpp"
 #include "uniform_map.hpp"
+#include "render_state.hpp"
 #include "opengl_utils.hpp"
 
 #define DRAW_STATIC_INIT() \
@@ -36,11 +37,13 @@ class DrawCommand {
     DrawCommand(Drawable& drawable,
                 Program& program,
                 AbstractSurfacePtr framebuffer,
-                UniformMap uniform_map = UniformMap()) :
+                UniformMap uniform_map = UniformMap(),
+                RenderState render_state = RenderState()) :
         _drawable(drawable),
         _program(program),
         _framebuffer(framebuffer),
         _uniform_map(uniform_map),
+        _render_state(render_state),
         _use_framebuffer(framebuffer->get_width() > 0) {
         for (Program& program : _programs) {
             if (program == _program)
@@ -85,6 +88,7 @@ class DrawCommand {
     Program& _program;
     AbstractSurfacePtr _framebuffer;
     UniformMap _uniform_map;
+    RenderState _render_state;
 
     bool _use_framebuffer;
 
