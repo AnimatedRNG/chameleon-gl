@@ -73,7 +73,6 @@ class TextureRenderer : public Renderer {
 
   private:
     Program program;
-    GLuint vao;
     Mesh quad;
     Texture& texture;
     RenderState render_state;
