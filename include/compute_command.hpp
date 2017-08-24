@@ -21,12 +21,29 @@
 #pragma once
 
 #include "command.hpp"
+#include "uniform_map.hpp"
 #include "opengl_utils.hpp"
 
 class ComputeCommand : public Command {
   public:
     ComputeCommand(Program& program,
-                   UniformMap uniform_map = UniformMap()) {
+                   const glm::uvec3& workgroup_count,
+                   UniformMap uniform_map = UniformMap()) :
+        _program(program),
+        _workgroup_count(workgroup_count),
+        _uniform_map(uniform_map) {
 
     }
+
+    void operator()() override {
+        _program.bind();
+        _uniform_map.apply(_program);
+        _program.dispatch_compute(_workgroup_count);
+        _uniform_map.post_render();
+    }
+
+  private:
+    Program& _program;
+    const glm::uvec3 _workgroup_count;
+    UniformMap _uniform_map;
 };
