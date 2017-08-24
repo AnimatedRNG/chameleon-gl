@@ -8,9 +8,6 @@ bin/
 Testing/
 _3rdParty/
 
-# Assets
-assets/
-
 # CMake-specific files
 CMakeCache.txt
 CMakeFiles
