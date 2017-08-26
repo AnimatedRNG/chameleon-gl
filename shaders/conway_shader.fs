@@ -27,7 +27,7 @@ uniform vec4 chml_viewport;
 #define SCREEN_NORM(a) (a) / chml_viewport.zw
 #define FETCH(pos) texture(prior, SCREEN_NORM(vec2(pos) + gl_FragCoord.xy)).r
 #define LIVE() color = vec3(1.0)
-#define DIE() color = vec3(0.0)
+#define DIE() discard
 
 void main() {
     bool alive = int(FETCH(ivec2(0, 0))) == 1.0;
