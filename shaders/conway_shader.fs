@@ -32,16 +32,16 @@ uniform vec4 chml_viewport;
 void main() {
     bool alive = int(FETCH(ivec2(0, 0))) == 1.0;
 
-    float num_neighbors = 0;
-    num_neighbors += FETCH(ivec2(-1, -1));
-    num_neighbors += FETCH(ivec2(-1, 0));
-    num_neighbors += FETCH(ivec2(-1, 1));
-    num_neighbors += FETCH(ivec2(0, -1));
-    num_neighbors += FETCH(ivec2(0, 1));
-    num_neighbors += FETCH(ivec2(1, -1));
-    num_neighbors += FETCH(ivec2(1, 0));
-    num_neighbors += FETCH(ivec2(1, 1));
-    num_neighbors = float(int(round(num_neighbors)));
+    float neighbor_accum = 0;
+    neighbor_accum += FETCH(ivec2(-1, -1));
+    neighbor_accum += FETCH(ivec2(-1, 0));
+    neighbor_accum += FETCH(ivec2(-1, 1));
+    neighbor_accum += FETCH(ivec2(0, -1));
+    neighbor_accum += FETCH(ivec2(0, 1));
+    neighbor_accum += FETCH(ivec2(1, -1));
+    neighbor_accum += FETCH(ivec2(1, 0));
+    neighbor_accum += FETCH(ivec2(1, 1));
+    int num_neighbors = int(round(neighbor_accum));
 
     if (alive) {
         if (num_neighbors < 2 || num_neighbors > 3) {
