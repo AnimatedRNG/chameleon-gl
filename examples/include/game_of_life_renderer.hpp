@@ -134,8 +134,6 @@ class ConwayLifeRenderer : public Renderer {
                                           render_map,
                                           render_state));
 
-        DEBUG("Ping pong " << ping_pong);
-
         return CommandList({clear_screen, clear_fbo, update, render});
     }
 
