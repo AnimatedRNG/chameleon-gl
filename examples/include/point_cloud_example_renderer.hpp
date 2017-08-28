@@ -57,9 +57,6 @@ class PointCloudExampleRenderer : public Renderer {
         program.link_program();
 
         auto points = random_data(1000);
-        for (auto point : points) {
-            DEBUG(point.position);
-        }
         point_cloud.init(points);
 
         render_state.set_param(DepthFunction({GL_LESS}));
