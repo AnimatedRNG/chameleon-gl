@@ -50,9 +50,9 @@ class PointCloudExampleRenderer : public Renderer {
     frame_count(0) {
         srand((int) time(0));
 
-        program.compile_shader("shaders/simple_shader.vs", GL_VERTEX_SHADER,
+        program.compile_shader("examples/shaders/simple_shader.vs", GL_VERTEX_SHADER,
                                true, true);
-        program.compile_shader("shaders/simple_point_shader.fs", GL_FRAGMENT_SHADER,
+        program.compile_shader("examples/shaders/simple_point_shader.fs", GL_FRAGMENT_SHADER,
                                true, true);
         program.link_program();
 
