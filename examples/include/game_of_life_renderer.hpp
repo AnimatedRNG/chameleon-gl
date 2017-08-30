@@ -51,15 +51,15 @@ class ConwayLifeRenderer : public Renderer {
     frame_count(0) {
         srand((int) time(0));
 
-        program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER,
+        program.compile_shader("examples/shaders/texture_shader.vs", GL_VERTEX_SHADER,
                                true, true);
-        program.compile_shader("shaders/conway_shader.fs", GL_FRAGMENT_SHADER,
+        program.compile_shader("examples/shaders/conway_shader.fs", GL_FRAGMENT_SHADER,
                                true, true);
         program.link_program();
 
-        texture_program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER,
+        texture_program.compile_shader("examples/shaders/texture_shader.vs", GL_VERTEX_SHADER,
                                        true, true);
-        texture_program.compile_shader("shaders/texture_shader.fs", GL_FRAGMENT_SHADER,
+        texture_program.compile_shader("examples/shaders/texture_shader.fs", GL_FRAGMENT_SHADER,
                                        true, true);
         texture_program.link_program();
 

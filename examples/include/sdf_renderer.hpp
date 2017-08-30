@@ -42,9 +42,9 @@ class SDFRenderer : public Renderer {
         render_state( {
         GL_MULTISAMPLE, GL_DITHER, GL_DEPTH_TEST
     }) {
-        program.compile_shader("shaders/sdf_shader.vs", GL_VERTEX_SHADER,
+        program.compile_shader("examples/shaders/sdf_shader.vs", GL_VERTEX_SHADER,
                                true, true);
-        program.compile_shader("shaders/sdf_shader.fs", GL_FRAGMENT_SHADER,
+        program.compile_shader("examples/shaders/sdf_shader.fs", GL_FRAGMENT_SHADER,
                                true, true);
         program.link_program();
 

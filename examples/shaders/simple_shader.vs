@@ -28,6 +28,7 @@ uniform mat4 chml_model;
 uniform mat4 chml_view;
 uniform mat4 chml_projection;
 
+out vec4 EC;
 out vec4 normal_EC;
 out vec2 uv;
 
@@ -36,5 +37,6 @@ void main() {
     mat4 mvp = chml_projection * mv;
     gl_Position = mvp * vec4(vertex_pos.xyz, 1);
     normal_EC = mv * vertex_normal;
+    EC = mv * vec4(vertex_pos.xyz, 1);
     uv = vertex_uv;
 }

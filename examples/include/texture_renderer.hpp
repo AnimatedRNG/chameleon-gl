@@ -43,9 +43,9 @@ class TextureRenderer : public Renderer {
         render_state( {
         GL_MULTISAMPLE, GL_DITHER, GL_DEPTH_TEST, GL_CULL_FACE
     }) {
-        program.compile_shader("shaders/texture_shader.vs", GL_VERTEX_SHADER,
+        program.compile_shader("examples/shaders/texture_shader.vs", GL_VERTEX_SHADER,
                                true, true);
-        program.compile_shader("shaders/texture_shader.fs", GL_FRAGMENT_SHADER,
+        program.compile_shader("examples/shaders/texture_shader.fs", GL_FRAGMENT_SHADER,
                                true, true);
         program.link_program();
 
