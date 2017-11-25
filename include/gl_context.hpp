@@ -48,7 +48,7 @@ class GLContext {
         for (int i = 0; i < GLContext::max_texture_image_units; i++) {
             if (texture_image_units.find(i) == texture_image_units.end()) {
                 texture_image_units.insert(i);
-                return get_imaging_unit_from_offset(i);
+                return i;
             }
         }
         return -1;
